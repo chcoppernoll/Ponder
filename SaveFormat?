@@ -1,0 +1,14 @@
+# COMMENT
+
+players: 4
+size: 12
+# Other settings
+
+action: <action>
+action: <action>
+player: <my_id>
+action: <action>
+player: <p2_id>
+player: <p3_id>
+action: <action>
+player: <p4_id>
