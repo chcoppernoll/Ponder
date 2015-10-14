@@ -12,3 +12,10 @@ player: <p2_id>
 player: <p3_id>
 action: <action>
 player: <p4_id>
+
+# Or
+
+<my_id>: <action_num>
+<p2_id>: <action_num>
+<p3_id>: <action_num>
+<p4_id>: <action_num>
