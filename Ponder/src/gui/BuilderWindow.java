@@ -11,8 +11,6 @@ import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.FlowLayout;
@@ -20,6 +18,31 @@ import java.awt.FlowLayout;
 public class BuilderWindow {
 
 	private JFrame frame;
+	
+	// TODO Alex
+	/*
+	 * Get Spawn Area to stack from the bottom for players 2 and 3
+	 * Settings and GameList buttons pop up new jPanels over the game board and remove listeners for other objects
+	 * Get a JAR Builder
+	 * Make JAR out of Artwork
+	 * Add JAR to classpath
+	 */
+	
+	// TODO Grayson
+	/*
+	 * Work on artwork
+	 * Work on the api
+	 * Move elements into position
+	 */
+	
+	// TODO API
+	/*
+	 * Be able to click and move pieces
+	 * Be able to remove from the spawn area to the board
+	 * Need to add a call to clear RefreshQueue
+	 * Be able to chain moves
+	 * Be able to get a cell from the mouse
+	 */
 
 	/**
 	 * Launch the application.
@@ -73,11 +96,6 @@ public class BuilderWindow {
 		});
 		btnGameList.setBounds(658, 29, 122, 23);
 		frame.getContentPane().add(btnGameList);
-		
-		JTextPane txtpnGameDataGoes = new JTextPane();
-		txtpnGameDataGoes.setText("Game Data Goes Here");
-		txtpnGameDataGoes.setBounds(148, 11, 500, 62);
-		frame.getContentPane().add(txtpnGameDataGoes);
 		
 		JTextPane txtpnPlayer = new JTextPane();
 		txtpnPlayer.setText("Player 1");
@@ -206,6 +224,16 @@ public class BuilderWindow {
 		frame.getContentPane().add(panel_4);
 		panel_4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
+		JPanel panel_5 = new JPanel();
+		panel_5.setBounds(148, 11, 500, 62);
+		frame.getContentPane().add(panel_5);
+		panel_5.setLayout(null);
+		
+		JTextPane txtpnGameDataGoes = new JTextPane();
+		txtpnGameDataGoes.setText("Game Data Goes Here");
+		txtpnGameDataGoes.setBounds(149, 31, 209, 20);
+		panel_5.add(txtpnGameDataGoes);
+		
 		JButton[][] cells = new JButton[9][9];
 		
 		for (int x = 0; x != cells.length; ++x)
@@ -213,6 +241,8 @@ public class BuilderWindow {
 				cells[x][y] = new JButton(x + ", " + y);
 				cells[x][y].setBackground(Color.BLACK);
 				cells[x][y].addMouseListener(new MouseAdapter() {
+					private boolean clicked = false;
+					
 					@Override
 					public void mouseEntered(MouseEvent e) {
 						((JButton)e.getSource()).setBackground(Color.CYAN);
@@ -220,11 +250,23 @@ public class BuilderWindow {
 					
 					@Override
 					public void mouseExited(MouseEvent e) {
-						((JButton)e.getSource()).setBackground(Color.BLACK);
+						if (!clicked)
+							((JButton)e.getSource()).setBackground(Color.BLACK);
 					}
 					
 					public void mouseClicked(MouseEvent e) {
+						//add to Queue
+						((JButton)e.getSource()).setBackground(Color.GREEN);
+					}
+					
+					public void mousePressed(MouseEvent e) {
+						clicked = true;
 						((JButton)e.getSource()).setBackground(Color.RED);
+					}
+					
+					public void mouseReleased(MouseEvent e) {
+						clicked = false;
+						mouseExited(e);
 					}
 				});
 				panel.add(cells[x][y]);
