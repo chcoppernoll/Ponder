@@ -14,23 +14,13 @@ import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.FlowLayout;
-import java.awt.CardLayout;
-import net.miginfocom.swing.MigLayout;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormSpecs;
-import com.jgoodies.forms.layout.RowSpec;
 import javax.swing.BoxLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 
 public class BuilderWindow {
 
 	private JFrame frame = new JFrame();
 	private JPanel[] players = new JPanel[4];
+	private ImageIcon[][] theme = new ImageIcon[4][2];
 	private JPanel gameHeader = new JPanel();
 	
 	private JButton[][] cells = new JButton[9][9];
@@ -73,6 +63,13 @@ public class BuilderWindow {
 	 * Create the application.
 	 */
 	public BuilderWindow() {
+		ImageIcon piece = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
+		ImageIcon flag = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"));
+		theme[0] = new ImageIcon[] { piece, flag };
+		theme[1] = new ImageIcon[] { piece, flag };
+		theme[2] = new ImageIcon[] { piece, flag };
+		theme[3] = new ImageIcon[] { piece, flag };
+		
 		initialize();
 	}
 	
@@ -249,30 +246,23 @@ public class BuilderWindow {
 			}
 			
 		// Testing piece display
-		setUpPieces(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		setUpFlags(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")));
+		for (int i = 0; i != players.length; ++i)
+			setUpPieces(i);
+		
+		setUpFlags();
 	}
 	
-	private void setUpPieces(ImageIcon icon) {
-		newPiece(cells[1][2], icon);
-		newPiece(cells[1][3], icon);
-		newPiece(cells[2][1], icon);
-		newPiece(cells[3][1], icon);
+	
+	private void setUpPieces(int player) {
+		int x = player < 2 ? 1 : 7;
+		int y = player % 2 == 0 ? 1 : 7;
+		int dx = player < 2 ? 1 : -1;
+		int dy = player % 2 == 0 ? 1 : -1;
 		
-		newPiece(cells[5][1], icon);
-		newPiece(cells[6][1], icon);
-		newPiece(cells[7][2], icon);
-		newPiece(cells[7][3], icon);
-		
-		newPiece(cells[1][5], icon);
-		newPiece(cells[1][6], icon);
-		newPiece(cells[2][7], icon);
-		newPiece(cells[3][7], icon);
-
-		newPiece(cells[5][7], icon);
-		newPiece(cells[6][7], icon);
-		newPiece(cells[7][6], icon);
-		newPiece(cells[7][5], icon);
+		newPiece(cells[y + dy][x], theme[0][0]);
+		newPiece(cells[y + 2 * dy][x], theme[1][0]);
+		newPiece(cells[y][x + dx], theme[2][0]);
+		newPiece(cells[y][x + 2 * dx], theme[3][0]);
 	}
 	
 	private void newPiece(JButton block, ImageIcon icon) {
@@ -280,11 +270,15 @@ public class BuilderWindow {
 		block.setIcon(icon);
 	}
 	
-	private void setUpFlags(ImageIcon icon) {
-		newPiece(cells[1][1], icon);
-		newPiece(cells[7][1], icon);
-		newPiece(cells[1][7], icon);
-		newPiece(cells[7][7], icon);
+	private void setUpFlags() {
+		newPiece(cells[1][1], theme[0][1]);
+		newPiece(cells[1][7], theme[1][1]);
+		newPiece(cells[7][1], theme[2][1]);
+		newPiece(cells[7][7], theme[3][1]);
+	}
+	
+	public void setTheme(ImageIcon[][] icons) {
+		theme = icons;
 	}
 	
 	public JTextPane getLabel(int player) {
@@ -302,12 +296,11 @@ public class BuilderWindow {
 	}
 	
 	public JPanel getStack(int player) {
-		//return (JPanel)players[player].getComponents()[5];
-		return null;
+		return (JPanel)players[player].getComponents()[5];
 	}
 	
 	JButton getBlock(int x, int y) {
-		return !invalidPoint(x, y) ? cells[x][y] : null;
+		return !invalidPoint(x, y) ? cells[y][x] : null;
 	}
 	
 	/*
@@ -336,4 +329,6 @@ public class BuilderWindow {
 		
 		return ret;
 	}
+
+	// Might need a way to move pieces
 }
