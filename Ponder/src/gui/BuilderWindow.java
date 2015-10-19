@@ -5,7 +5,11 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import java.awt.GridLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JTextPane;
+
+import game.GameLogic;
+
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Component;
@@ -14,7 +18,9 @@ import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.FlowLayout;
+
 import javax.swing.BoxLayout;
+
 
 public class BuilderWindow {
 
@@ -24,6 +30,8 @@ public class BuilderWindow {
 	private JPanel gameHeader = new JPanel();
 	
 	private JButton[][] cells = new JButton[9][9];
+	
+	private GameLogic logic;
 	
 	// TODO Alex
 	/*
@@ -37,18 +45,13 @@ public class BuilderWindow {
 	// TODO Grayson
 	/*
 	 * Work on artwork
-	 * Work on the api
-	 * Move elements into position
+	 * Get Cell from Mouse Position
 	 */
 	
 	// TODO API
 	/*
 	 * Be able to click and move pieces
-	 * Be able to remove from the spawn area to the board
 	 * Need to add a call to clear RefreshQueue
-	 * Be able to chain moves
-	 * Be able to get a cell from the mouse
-	 * Translate MousePosition to Grid coordinate
 	 */	
 	
 	private boolean outOfRange(int p) {
@@ -63,6 +66,19 @@ public class BuilderWindow {
 	 * Create the application.
 	 */
 	public BuilderWindow() {
+		ImageIcon piece = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
+		ImageIcon flag = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"));
+		theme[0] = new ImageIcon[] { piece, flag };
+		theme[1] = new ImageIcon[] { piece, flag };
+		theme[2] = new ImageIcon[] { piece, flag };
+		theme[3] = new ImageIcon[] { piece, flag };
+		
+		initialize();
+	}
+	
+	public BuilderWindow(GameLogic game) {
+		logic = game;
+
 		ImageIcon piece = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
 		ImageIcon flag = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"));
 		theme[0] = new ImageIcon[] { piece, flag };
@@ -208,15 +224,17 @@ public class BuilderWindow {
 		frame.getContentPane().add(grid);
 		grid.setLayout(new GridLayout(9, 9, 1, 1));
 		
-		for (int x = 0; x != cells.length; ++x)
-			for (int y = 0; y != cells.length; ++y) {
-				cells[x][y] = new JButton(x + ", " + y);
-				cells[x][y].setBackground(Color.BLACK);
-				cells[x][y].addMouseListener(new MouseAdapter() {
+		for (int y = 0; y != cells.length; ++y)
+			for (int x = 0; x != cells.length; ++x) {
+				cells[y][x] = new JButton(x + ", " + y);
+				cells[y][x].setBackground(Color.BLACK);
+				cells[y][x].addMouseListener(new MouseAdapter() {
 					private boolean clicked = false;
+					private GameLogic game = logic;
 					
 					@Override
 					public void mouseEntered(MouseEvent e) {
+						// check game
 						((JButton)e.getSource()).setBackground(Color.CYAN);
 					}
 					
@@ -242,7 +260,7 @@ public class BuilderWindow {
 					}
 				});
 				
-				grid.add(cells[x][y]);
+				grid.add(cells[y][x]);
 			}
 			
 		// Testing piece display
@@ -299,7 +317,7 @@ public class BuilderWindow {
 		return (JPanel)players[player].getComponents()[5];
 	}
 	
-	JButton getBlock(int x, int y) {
+	JButton getCell(int x, int y) {
 		return !invalidPoint(x, y) ? cells[y][x] : null;
 	}
 	
@@ -321,8 +339,8 @@ public class BuilderWindow {
 		for (int dx = -1; dx != 2; ++dx) {
 			for (int dy = -1; dy != 2; ++dy) {
 				if (dy != 0 && dx != 0) {
-					ret[0][count] = getBlock(x + dx, y + dy);
-					ret[1][count++] = getBlock(x + 2 * dx, y + 2 * dy);
+					ret[0][count] = getCell(x + dx, y + dy);
+					ret[1][count++] = getCell(x + 2 * dx, y + 2 * dy);
 				}
 			}
 		}
@@ -330,5 +348,35 @@ public class BuilderWindow {
 		return ret;
 	}
 
-	// Might need a way to move pieces
+	// Might need to change in the future
+	public void move(JComponent from, JComponent to) {
+		if (from instanceof JButton) {
+			JButton f = (JButton)from;
+			
+			// Move from cell to cell
+			if (to instanceof JButton) {
+				((JButton) to).setIcon(f.getIcon());
+				((JButton) to).setText("");
+				f.setIcon(null);
+				
+			// Move from cell to spawn stack
+			} else if (to instanceof JPanel) {
+				JButton spawn = new JButton();
+				// addEventListeners
+				
+				spawn.setIcon(f.getIcon());
+				((JPanel)to).add(spawn);
+				f.setIcon(null);
+			}
+			
+		// Move from spawn stack to cell
+		} else if (from instanceof JPanel) {
+			JPanel f = (JPanel)from;
+			JButton t = (JButton)to;
+			
+			// get the icon to switch on
+			t.setIcon(((JButton)from.getComponent(0)).getIcon());
+			from.remove(0);
+		}
+	}
 }
