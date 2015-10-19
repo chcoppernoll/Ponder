@@ -8,16 +8,32 @@ import javax.swing.JButton;
 import javax.swing.JTextPane;
 import javax.swing.JPanel;
 import java.awt.Color;
-import java.awt.ComponentOrientation;
+import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.FlowLayout;
+import java.awt.CardLayout;
+import net.miginfocom.swing.MigLayout;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.ColumnSpec;
+import com.jgoodies.forms.layout.FormSpecs;
+import com.jgoodies.forms.layout.RowSpec;
+import javax.swing.BoxLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 
 public class BuilderWindow {
 
-	private JFrame frame;
+	private JFrame frame = new JFrame();
+	private JPanel[] players = new JPanel[4];
+	private JPanel gameHeader = new JPanel();
+	
+	private JButton[][] cells = new JButton[9][9];
 	
 	// TODO Alex
 	/*
@@ -42,7 +58,27 @@ public class BuilderWindow {
 	 * Need to add a call to clear RefreshQueue
 	 * Be able to chain moves
 	 * Be able to get a cell from the mouse
+	 * Translate MousePosition to Grid coordinate
+	 */	
+	
+	private boolean outOfRange(int p) {
+		return p < 1 || p > 9;
+	}
+	
+	private boolean invalidPoint(int x, int y) {
+		return outOfRange(x) || outOfRange(y);
+	}
+
+	/**
+	 * Create the application.
 	 */
+	public BuilderWindow() {
+		initialize();
+	}
+	
+	public void reset() {
+		initialize();
+	}
 
 	/**
 	 * Launch the application.
@@ -61,22 +97,15 @@ public class BuilderWindow {
 	}
 
 	/**
-	 * Create the application.
-	 */
-	public BuilderWindow() {
-		initialize();
-	}
-
-	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
 		frame.setResizable(false);
-		frame.setBounds(100, 100, 801, 638);
+		frame.setBounds(100, 100, 810, 640);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
+		// Settings button
 		JButton btnSettings = new JButton("Settings");
 		btnSettings.addMouseListener(new MouseAdapter() {
 			@Override
@@ -84,9 +113,10 @@ public class BuilderWindow {
 				System.out.println("Clicked Settings!");
 			}
 		});
-		btnSettings.setBounds(17, 29, 114, 23);
+		btnSettings.setBounds(20, 30, 110, 25);
 		frame.getContentPane().add(btnSettings);
 		
+		// Game List button
 		JButton btnGameList = new JButton("Game List");
 		btnGameList.addMouseListener(new MouseAdapter() {
 			@Override
@@ -94,147 +124,92 @@ public class BuilderWindow {
 				System.out.println("Clicked Game List!");
 			}
 		});
-		btnGameList.setBounds(658, 29, 122, 23);
+		btnGameList.setBounds(670, 30, 110, 25);
 		frame.getContentPane().add(btnGameList);
 		
-		JTextPane txtpnPlayer = new JTextPane();
-		txtpnPlayer.setText("Player 1");
-		txtpnPlayer.setBounds(49, 109, 82, 23);
-		frame.getContentPane().add(txtpnPlayer);
+		for (int i = 0; i != players.length; ++i) {
+			players[i] = new JPanel();
+			players[i].setBounds(i < 2 ? 41 : 670, i % 2 == 0 ? 84 : 363, 89, 227);
+			players[i].setLayout(null);
+			
+			// Add player label
+			JTextPane player_name = new JTextPane();
+			player_name.setBounds(i < 2 ? 7 : 0, i % 2 == 0 ? 0 : 198, 82, 23);
+			player_name.setText("Player " + (i + 1));
+			// Need a way of not having the background color
+			players[i].add(player_name);
+			
+			// Add flag control icons
+			for (int j = 0; j != 4; ++j) {
+				JLabel flag_icon = new JLabel("");
+				
+				if (i < 2)
+					flag_icon.setBounds(69 - 22 * j, i % 2 == 0 ? 34 : 173, 20, 20);
+				else
+					flag_icon.setBounds(0 + 22 * j, i % 2 == 0 ? 34 : 173, 20, 20);
+				
+				flag_icon.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Computer.gif")));
+				
+				players[i].add(flag_icon);
+			}
+			
+			// Add Spawn Stack
+			// Waiting for work on spawn stack
+			
+			frame.getContentPane().add(players[i]);
+		}
 		
-		JTextPane txtpnPlayer_1 = new JTextPane();
-		txtpnPlayer_1.setText("Player 2");
-		txtpnPlayer_1.setBounds(49, 537, 82, 23);
-		frame.getContentPane().add(txtpnPlayer_1);
+		// For Stack Testing
+		JPanel stack_test = new JPanel();
+		stack_test.setBounds(31, 215, 85, 138);
+		frame.getContentPane().add(stack_test);
 		
-		JTextPane txtpnPlayer_3 = new JTextPane();
-		txtpnPlayer_3.setText("Player 4");
-		txtpnPlayer_3.setBounds(658, 109, 82, 23);
-		frame.getContentPane().add(txtpnPlayer_3);
+		JButton btnNewButton_1 = new JButton("New button");
 		
-		JTextPane txtpnPlayer_2 = new JTextPane();
-		txtpnPlayer_2.setText("Player 3");
-		txtpnPlayer_2.setBounds(658, 537, 82, 23);
-		frame.getContentPane().add(txtpnPlayer_2);
-		
-		JPanel panel = new JPanel();
-		panel.setBackground(Color.BLACK);
-		panel.setBounds(148, 84, 500, 500);
-		frame.getContentPane().add(panel);
-		panel.setLayout(new GridLayout(9, 9, 1, 1));
-		
-		JLabel lblNewLabel = new JLabel("");
-		lblNewLabel.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		lblNewLabel.setBounds(111, 512, 20, 20);
-		frame.getContentPane().add(lblNewLabel);
-		
-		JLabel label = new JLabel("");
-		label.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label.setBounds(87, 512, 20, 20);
-		frame.getContentPane().add(label);
-		
-		JLabel label_1 = new JLabel("");
-		label_1.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_1.setBounds(42, 512, 20, 20);
-		frame.getContentPane().add(label_1);
-		
-		JLabel label_2 = new JLabel("");
-		label_2.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_2.setBounds(66, 512, 20, 20);
-		frame.getContentPane().add(label_2);
-		
-		JLabel label_3 = new JLabel("");
-		label_3.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_3.setBounds(111, 143, 20, 20);
-		frame.getContentPane().add(label_3);
-		
-		JLabel label_4 = new JLabel("");
-		label_4.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_4.setBounds(87, 143, 20, 20);
-		frame.getContentPane().add(label_4);
-		
-		JLabel label_5 = new JLabel("");
-		label_5.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_5.setBounds(66, 143, 20, 20);
-		frame.getContentPane().add(label_5);
-		
-		JLabel label_6 = new JLabel("");
-		label_6.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_6.setBounds(42, 143, 20, 20);
-		frame.getContentPane().add(label_6);
-		
-		JLabel label_7 = new JLabel("");
-		label_7.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_7.setBounds(727, 143, 20, 20);
-		frame.getContentPane().add(label_7);
-		
-		JLabel label_8 = new JLabel("");
-		label_8.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_8.setBounds(703, 143, 20, 20);
-		frame.getContentPane().add(label_8);
-		
-		JLabel label_9 = new JLabel("");
-		label_9.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_9.setBounds(682, 143, 20, 20);
-		frame.getContentPane().add(label_9);
-		
-		JLabel label_10 = new JLabel("");
-		label_10.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_10.setBounds(658, 143, 20, 20);
-		frame.getContentPane().add(label_10);
-		
-		JLabel label_11 = new JLabel("");
-		label_11.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_11.setBounds(658, 512, 20, 20);
-		frame.getContentPane().add(label_11);
-		
-		JLabel label_12 = new JLabel("");
-		label_12.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_12.setBounds(682, 512, 20, 20);
-		frame.getContentPane().add(label_12);
-		
-		JLabel label_13 = new JLabel("");
-		label_13.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_13.setBounds(703, 512, 20, 20);
-		frame.getContentPane().add(label_13);
-		
-		JLabel label_14 = new JLabel("");
-		label_14.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
-		label_14.setBounds(727, 512, 20, 20);
-		frame.getContentPane().add(label_14);
-		
+		JButton btnNewButton = new JButton("New button");
+		stack_test.setLayout(new BoxLayout(stack_test, BoxLayout.X_AXIS));
+		stack_test.add(btnNewButton_1);
+		stack_test.add(btnNewButton);
+
+		// Player "Spawn" stack
 		JPanel panel_1 = new JPanel();
-		panel_1.setBounds(76, 174, 55, 162);
-		frame.getContentPane().add(panel_1);
+		panel_1.setBounds(34, 65, 55, 162);
+		players[0].add(panel_1);
 		panel_1.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		
+
 		JPanel panel_2 = new JPanel();
-		panel_2.setBounds(76, 339, 55, 162);
-		frame.getContentPane().add(panel_2);
+		panel_2.setBounds(34, 0, 55, 162);
+		players[1].add(panel_2);
 		panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		JPanel panel_3 = new JPanel();
-		panel_3.setBounds(658, 339, 55, 162);
-		frame.getContentPane().add(panel_3);
+		panel_3.setBounds(0, 65, 55, 162);
+		players[2].add(panel_3);
 		panel_3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		panel_3.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-		
+
 		JPanel panel_4 = new JPanel();
-		panel_4.setBounds(658, 174, 55, 162);
-		frame.getContentPane().add(panel_4);
+		panel_4.setBounds(0, 0, 55, 162);
+		players[3].add(panel_4);
 		panel_4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
-		JPanel panel_5 = new JPanel();
-		panel_5.setBounds(148, 11, 500, 62);
-		frame.getContentPane().add(panel_5);
-		panel_5.setLayout(null);
+		
+		// Game Data Text
+		gameHeader.setBounds(150, 11, 500, 62);
+		frame.getContentPane().add(gameHeader);
+		gameHeader.setLayout(null);
 		
 		JTextPane txtpnGameDataGoes = new JTextPane();
 		txtpnGameDataGoes.setText("Game Data Goes Here");
 		txtpnGameDataGoes.setBounds(149, 31, 209, 20);
-		panel_5.add(txtpnGameDataGoes);
+		gameHeader.add(txtpnGameDataGoes);
 		
-		JButton[][] cells = new JButton[9][9];
+		
+		// Game Grid
+		JPanel grid = new JPanel();
+		grid.setBackground(Color.BLACK);
+		grid.setBounds(150, 84, 500, 500);
+		frame.getContentPane().add(grid);
+		grid.setLayout(new GridLayout(9, 9, 1, 1));
 		
 		for (int x = 0; x != cells.length; ++x)
 			for (int y = 0; y != cells.length; ++y) {
@@ -254,7 +229,7 @@ public class BuilderWindow {
 							((JButton)e.getSource()).setBackground(Color.BLACK);
 					}
 					
-					public void mouseClicked(MouseEvent e) {
+					public void mouseClicked(MouseEvent e) {						
 						//add to Queue
 						((JButton)e.getSource()).setBackground(Color.GREEN);
 					}
@@ -269,10 +244,96 @@ public class BuilderWindow {
 						mouseExited(e);
 					}
 				});
-				panel.add(cells[x][y]);
+				
+				grid.add(cells[x][y]);
 			}
 			
-		cells[5][4].setText("");
-		cells[5][4].setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
+		// Testing piece display
+		setUpPieces(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")));
+		setUpFlags(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")));
+	}
+	
+	private void setUpPieces(ImageIcon icon) {
+		newPiece(cells[1][2], icon);
+		newPiece(cells[1][3], icon);
+		newPiece(cells[2][1], icon);
+		newPiece(cells[3][1], icon);
+		
+		newPiece(cells[5][1], icon);
+		newPiece(cells[6][1], icon);
+		newPiece(cells[7][2], icon);
+		newPiece(cells[7][3], icon);
+		
+		newPiece(cells[1][5], icon);
+		newPiece(cells[1][6], icon);
+		newPiece(cells[2][7], icon);
+		newPiece(cells[3][7], icon);
+
+		newPiece(cells[5][7], icon);
+		newPiece(cells[6][7], icon);
+		newPiece(cells[7][6], icon);
+		newPiece(cells[7][5], icon);
+	}
+	
+	private void newPiece(JButton block, ImageIcon icon) {
+		block.setText("");
+		block.setIcon(icon);
+	}
+	
+	private void setUpFlags(ImageIcon icon) {
+		newPiece(cells[1][1], icon);
+		newPiece(cells[7][1], icon);
+		newPiece(cells[1][7], icon);
+		newPiece(cells[7][7], icon);
+	}
+	
+	public JTextPane getLabel(int player) {
+		return (JTextPane)players[player].getComponents()[0];
+	}
+	
+	public JLabel[] getFlagIcons(int player) {
+		JLabel[] ret = new JLabel[4];
+		
+		Component[] subs = players[player].getComponents();
+		for (int i = 0; i != ret.length; ++i)
+			ret[i] = (JLabel)subs[i + 1];
+		
+		return ret;
+	}
+	
+	public JPanel getStack(int player) {
+		//return (JPanel)players[player].getComponents()[5];
+		return null;
+	}
+	
+	JButton getBlock(int x, int y) {
+		return !invalidPoint(x, y) ? cells[x][y] : null;
+	}
+	
+	/*
+	 * The first column is for slide adjacent tiles
+	 * The second column is for jump adjacent tiles
+	 * 
+	 * The index of the columns correspond to this chart
+	 * 0 3 5 
+	 * 1 X 6
+	 * 2 4 7
+	 */
+	public JButton[][] getAdjacent(int x, int y) {
+		if (invalidPoint(x, y)) return null;
+		
+		JButton[][] ret = new JButton[2][8];
+		int count = 0;
+		
+		for (int dx = -1; dx != 2; ++dx) {
+			for (int dy = -1; dy != 2; ++dy) {
+				if (dy != 0 && dx != 0) {
+					ret[0][count] = getBlock(x + dx, y + dy);
+					ret[1][count++] = getBlock(x + 2 * dx, y + 2 * dy);
+				}
+			}
+		}
+		
+		return ret;
 	}
 }
