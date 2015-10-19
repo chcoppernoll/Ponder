@@ -1,5 +1,5 @@
 package game;
 
-public interface GameLogic {
-
+public interface GameLogic<E> {
+	void add(E elem);
 }

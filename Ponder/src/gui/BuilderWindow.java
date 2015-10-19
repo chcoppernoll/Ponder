@@ -9,6 +9,7 @@ import javax.swing.JComponent;
 import javax.swing.JTextPane;
 
 import game.GameLogic;
+import game.GraphicsLogic;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -20,6 +21,7 @@ import javax.swing.ImageIcon;
 import java.awt.FlowLayout;
 
 import javax.swing.BoxLayout;
+import javax.swing.SwingConstants;
 
 
 public class BuilderWindow {
@@ -31,7 +33,7 @@ public class BuilderWindow {
 	
 	private JButton[][] cells = new JButton[9][9];
 	
-	private GameLogic logic;
+	private GraphicsLogic logic = new GraphicsLogic();
 	
 	// TODO Alex
 	/*
@@ -45,40 +47,15 @@ public class BuilderWindow {
 	// TODO Grayson
 	/*
 	 * Work on artwork
-	 * Get Cell from Mouse Position
 	 */
 	
-	// TODO API
-	/*
-	 * Be able to click and move pieces
-	 * Need to add a call to clear RefreshQueue
-	 */	
-	
-	private boolean outOfRange(int p) {
-		return p < 1 || p > 9;
-	}
-	
-	private boolean invalidPoint(int x, int y) {
-		return outOfRange(x) || outOfRange(y);
-	}
+	// PROBLEM
+	// How to represent Flags and pieces on the same tile
 
 	/**
 	 * Create the application.
 	 */
 	public BuilderWindow() {
-		ImageIcon piece = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
-		ImageIcon flag = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"));
-		theme[0] = new ImageIcon[] { piece, flag };
-		theme[1] = new ImageIcon[] { piece, flag };
-		theme[2] = new ImageIcon[] { piece, flag };
-		theme[3] = new ImageIcon[] { piece, flag };
-		
-		initialize();
-	}
-	
-	public BuilderWindow(GameLogic game) {
-		logic = game;
-
 		ImageIcon piece = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
 		ImageIcon flag = new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"));
 		theme[0] = new ImageIcon[] { piece, flag };
@@ -146,22 +123,19 @@ public class BuilderWindow {
 			players[i].setLayout(null);
 			
 			// Add player label
-			JTextPane player_name = new JTextPane();
+			JLabel player_name = new JLabel("Player " + (i + 1));
 			player_name.setBounds(i < 2 ? 7 : 0, i % 2 == 0 ? 0 : 198, 82, 23);
-			player_name.setText("Player " + (i + 1));
-			// Need a way of not having the background color
+			if (i < 2) player_name.setHorizontalAlignment(SwingConstants.RIGHT);
 			players[i].add(player_name);
 			
 			// Add flag control icons
 			for (int j = 0; j != 4; ++j) {
-				JLabel flag_icon = new JLabel("");
+				JLabel flag_icon = new JLabel(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Computer.gif")));
 				
 				if (i < 2)
 					flag_icon.setBounds(69 - 22 * j, i % 2 == 0 ? 34 : 173, 20, 20);
 				else
 					flag_icon.setBounds(0 + 22 * j, i % 2 == 0 ? 34 : 173, 20, 20);
-				
-				flag_icon.setIcon(new ImageIcon(BuilderWindow.class.getResource("/com/sun/java/swing/plaf/windows/icons/Computer.gif")));
 				
 				players[i].add(flag_icon);
 			}
@@ -172,18 +146,6 @@ public class BuilderWindow {
 			frame.getContentPane().add(players[i]);
 		}
 		
-		// For Stack Testing
-		JPanel stack_test = new JPanel();
-		stack_test.setBounds(31, 215, 85, 138);
-		frame.getContentPane().add(stack_test);
-		
-		JButton btnNewButton_1 = new JButton("New button");
-		
-		JButton btnNewButton = new JButton("New button");
-		stack_test.setLayout(new BoxLayout(stack_test, BoxLayout.X_AXIS));
-		stack_test.add(btnNewButton_1);
-		stack_test.add(btnNewButton);
-
 		// Player "Spawn" stack
 		JPanel panel_1 = new JPanel();
 		panel_1.setBounds(34, 65, 55, 162);
@@ -228,39 +190,48 @@ public class BuilderWindow {
 			for (int x = 0; x != cells.length; ++x) {
 				cells[y][x] = new JButton(x + ", " + y);
 				cells[y][x].setBackground(Color.BLACK);
+				
 				cells[y][x].addMouseListener(new MouseAdapter() {
-					private boolean clicked = false;
-					private GameLogic game = logic;
+					private void ternaryColor(JButton item, boolean test, Color if_true, Color if_false) {
+						item.setBackground(test ? if_true : if_false);
+					}
 					
-					@Override
 					public void mouseEntered(MouseEvent e) {
 						// check game
 						((JButton)e.getSource()).setBackground(Color.CYAN);
 					}
 					
-					@Override
 					public void mouseExited(MouseEvent e) {
-						if (!clicked)
-							((JButton)e.getSource()).setBackground(Color.BLACK);
+						JButton src = (JButton)e.getSource();
+						ternaryColor(src, logic.isClicked(src), Color.GREEN, Color.BLACK);
 					}
 					
-					public void mouseClicked(MouseEvent e) {						
-						//add to Queue
-						((JButton)e.getSource()).setBackground(Color.GREEN);
-					}
-					
-					public void mousePressed(MouseEvent e) {
-						clicked = true;
-						((JButton)e.getSource()).setBackground(Color.RED);
-					}
-					
-					public void mouseReleased(MouseEvent e) {
-						clicked = false;
-						mouseExited(e);
+					public void mouseClicked(MouseEvent e) {
+						JButton src = (JButton)e.getSource();
+						
+						// If right-click
+						if (e.getButton() == MouseEvent.BUTTON3) {
+							int x = src.getX() / 55, y = src.getY() / 55;
+							System.out.println("X: " + x + ", Y: " + y);
+							
+							JButton[][] adj = getAdjacent(src.getX() / 55, src.getY() / 55);
+							
+							for (JButton imm : adj[0])
+								if (imm != null) imm.setBackground(Color.YELLOW);
+							
+							for (JButton nimm : adj[1])
+								if (nimm != null) nimm.setBackground(Color.MAGENTA);
+							
+							return;
+						}
+						
+						logic.click(src);
+						ternaryColor(src, logic.isClicked(src), Color.GREEN, Color.BLACK);
 					}
 				});
 				
 				grid.add(cells[y][x]);
+				logic.add(cells[y][x]);
 			}
 			
 		// Testing piece display
@@ -269,7 +240,6 @@ public class BuilderWindow {
 		
 		setUpFlags();
 	}
-	
 	
 	private void setUpPieces(int player) {
 		int x = player < 2 ? 1 : 7;
@@ -299,8 +269,8 @@ public class BuilderWindow {
 		theme = icons;
 	}
 	
-	public JTextPane getLabel(int player) {
-		return (JTextPane)players[player].getComponents()[0];
+	public JLabel getLabel(int player) {
+		return (JLabel)players[player].getComponents()[0];
 	}
 	
 	public JLabel[] getFlagIcons(int player) {
@@ -316,11 +286,23 @@ public class BuilderWindow {
 	public JPanel getStack(int player) {
 		return (JPanel)players[player].getComponents()[5];
 	}
-	
-	JButton getCell(int x, int y) {
-		return !invalidPoint(x, y) ? cells[y][x] : null;
+
+	public GraphicsLogic getLogic() {
+		return logic;
 	}
 	
+	private boolean outOfRange(int p) {
+		return p < 0 || p > 8;
+	}
+	
+	private boolean invalidPoint(int x, int y) {
+		return outOfRange(x) || outOfRange(y);
+	}
+	
+	public JButton getCell(int x, int y) {
+		return !invalidPoint(x, y) ? cells[y][x] : null;
+	}
+
 	/*
 	 * The first column is for slide adjacent tiles
 	 * The second column is for jump adjacent tiles
@@ -338,7 +320,7 @@ public class BuilderWindow {
 		
 		for (int dx = -1; dx != 2; ++dx) {
 			for (int dy = -1; dy != 2; ++dy) {
-				if (dy != 0 && dx != 0) {
+				if (!(dy == 0 && dx == 0)) {
 					ret[0][count] = getCell(x + dx, y + dy);
 					ret[1][count++] = getCell(x + 2 * dx, y + 2 * dy);
 				}
@@ -348,6 +330,26 @@ public class BuilderWindow {
 		return ret;
 	}
 
+	public boolean canReach(JButton a, JButton b) {
+		return canSlide(a, b) || canJump(a, b);
+	}
+	
+	public boolean canSlide(JButton a, JButton b) {
+		int x0 = a.getX() / 55, x1 = b.getX() / 55;
+		int y0 = a.getY() / 55, y1 = b.getY() / 55;
+		int dx = Math.abs(x0 - x1), dy = Math.abs(y0 - y1);
+		
+		return dx == 1 || dy == 1;
+	}
+	
+	public boolean canJump(JButton a, JButton b) {
+		int x0 = a.getX() / 55, x1 = b.getX() / 55;
+		int y0 = a.getY() / 55, y1 = b.getY() / 55;
+		int dx = Math.abs(x0 - x1), dy = Math.abs(y0 - y1);
+		
+		return dx == 2 || dy == 2;
+	}
+	
 	// Might need to change in the future
 	public void move(JComponent from, JComponent to) {
 		if (from instanceof JButton) {
