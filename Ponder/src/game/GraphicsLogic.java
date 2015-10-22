@@ -1,5 +1,6 @@
 package game;
 
+import java.awt.Color;
 import java.util.HashMap;
 
 import javax.swing.JButton;
@@ -26,4 +27,5 @@ public class GraphicsLogic implements GameLogic<JButton> {
 	public void click(JButton elem) {
 		check.get(elem).clicked = !check.get(elem).clicked;
 	}
+	
 }
