@@ -36,6 +36,9 @@ public class SwingGraphics {
 	
 	private GraphicsLogic logic;
 	
+	private boolean inSettings = false, inGameList = false;
+	private JPanel settings = new JPanel(), gameList = new JPanel(), grid = new JPanel();		// grid??
+	
 	// TODO Alex
 	/*
 	 * Get Spawn Area to stack from the bottom for players 2 and 3
@@ -71,7 +74,7 @@ public class SwingGraphics {
 	
 	public void reset() {		
 		// Game Data Text
-		((JTextPane)gameHeader.getComponent(0)).setText("Game Data Goes Here");
+		((JLabel)gameHeader.getComponent(0)).setText("Game Data Goes Here");
 		
 		// Testing piece display
 		for (int i = 0; i != players.length; ++i)
@@ -140,9 +143,18 @@ public class SwingGraphics {
 		// Settings button
 		JButton btnSettings = new JButton("Settings");
 		btnSettings.addMouseListener(new MouseAdapter() {
-			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.out.println("Clicked Settings!");
+				System.out.println("Clicked Settings");
+				
+				if(inGameList) {
+					closeGameList();
+				}
+				if(inSettings) {
+					closeSettings();
+				} else {
+					openSettings();
+					inSettings = true;
+				}
 			}
 		});
 		btnSettings.setBounds(20, 30, 110, 25);
@@ -151,9 +163,19 @@ public class SwingGraphics {
 		// Game List button
 		JButton btnGameList = new JButton("Game List");
 		btnGameList.addMouseListener(new MouseAdapter() {
-			@Override
 			public void mouseClicked(MouseEvent e) {
-				System.out.println("Clicked Game List!");
+				System.out.println("Clicked Game List");
+				
+				if(inSettings) {
+					//close settings menu before proceeding
+					closeSettings();
+				}
+				if(inGameList) {
+					closeGameList();
+				} else {
+					openGameList();
+					inGameList = true;
+				}
 			}
 		});
 		btnGameList.setBounds(670, 30, 110, 25);
@@ -248,13 +270,33 @@ public class SwingGraphics {
 		frame.getContentPane().add(gameHeader);
 		gameHeader.setLayout(null);
 		
-		JTextPane txtpnGameDataGoes = new JTextPane();
+		JLabel txtpnGameDataGoes = new JLabel();
 		txtpnGameDataGoes.setBounds(149, 31, 209, 20);
 		gameHeader.add(txtpnGameDataGoes);
-
 		
+		// Settings window
+		settings.setVisible(false);;
+		settings.setBounds(150, 84, 500, 500);
+		frame.getContentPane().add(settings);
+		settings.setBackground(Color.WHITE);
+		settings.setLayout(new GridLayout(9, 9, 1, 1));
+		
+
+		// Game List window
+		gameList.setVisible(false);
+		gameList.setBounds(150, 84, 500, 500);
+		frame.getContentPane().add(gameList);
+		gameList.setBackground(Color.WHITE);
+		gameList.setLayout(new GridLayout(9, 9, 1, 1));
+		
+		JPanel gameList = new JPanel();
+		gameList.setVisible(false);
+		gameList.setBounds(150, 84, 500, 500);
+		frame.getContentPane().add(gameList);
+		gameList.setBackground(Color.WHITE);
+		gameList.setLayout(new GridLayout(9, 9, 1, 1));
+
 		// Game Grid
-		JPanel grid = new JPanel();
 		grid.setBackground(Color.BLACK);
 		grid.setBounds(150, 84, 500, 500);
 		frame.getContentPane().add(grid);
@@ -383,6 +425,32 @@ public class SwingGraphics {
 	// Tests if (x, y) is an invalid grid position
 	private boolean invalidPoint(int x, int y) {
 		return outOfRange(x) || outOfRange(y);
+	}
+
+	// Open/Close the settings window
+	private void openSettings() {
+		grid.setVisible(false);
+		settings.setVisible(true);
+		inSettings = true;
+	}
+	
+	private void openGameList() {
+		grid.setVisible(false);
+		gameList.setVisible(true);
+		inGameList = true;
+	}
+	
+	// Open/Close the game list window
+	private void closeSettings() {
+		grid.setVisible(true);
+		settings.setVisible(false);
+		inSettings = false;
+	}
+	
+	private void closeGameList() {
+		grid.setVisible(true);
+		gameList.setVisible(false);
+		inGameList = false;
 	}
 	
 	/**
