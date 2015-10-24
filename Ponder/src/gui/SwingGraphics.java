@@ -16,6 +16,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
+
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.FlowLayout;
@@ -25,7 +27,7 @@ import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.SwingConstants;
 
-
+// Move setup to SwingGraphicsRaw?
 public class SwingGraphics {
 
 	private JFrame frame = new JFrame();
@@ -33,6 +35,7 @@ public class SwingGraphics {
 	private ImageIcon[][] theme = new ImageIcon[4][2];			// Current theme set
 	private JPanel gameHeader = new JPanel();					// Game header
 	private JButton[][] cells = new JButton[9][9];				// Tiles
+	private JLabel mseLbl = new JLabel();
 	
 	private GraphicsLogic logic;
 	
@@ -42,12 +45,12 @@ public class SwingGraphics {
 	// TODO Alex
 	/*
 	 * Get Spawn Area to stack from the bottom for players 2 and 3
-	 * Settings and GameList buttons pop up new jPanels over the game board and remove listeners for other objects
 	 * Set up a JAR build system for the artwork
 	 */
 	
 	// TODO Grayson
 	/*
+	 * Start working on game logic and integration with the graphics
 	 * Work on artwork
 	 */
 	
@@ -64,10 +67,24 @@ public class SwingGraphics {
 		
 		ImageIcon piece = new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
 		ImageIcon flag = new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"));
-		theme[0] = new ImageIcon[] { piece, flag };
-		theme[1] = new ImageIcon[] { piece, flag };
-		theme[2] = new ImageIcon[] { piece, flag };
-		theme[3] = new ImageIcon[] { piece, flag };
+		
+		theme[0] = new ImageIcon[] {
+			piece,
+			flag
+			//piece_with_flag
+		};
+		theme[1] = new ImageIcon[] {
+			piece,
+			flag
+		};
+		theme[2] = new ImageIcon[] {
+			piece,
+			flag
+		};
+		theme[3] = new ImageIcon[] {
+			piece,
+			flag		
+		};
 
 		initialize();
 	}
@@ -84,6 +101,9 @@ public class SwingGraphics {
 		
 		move(cells[6][7], cells[6][6]);
 		move(cells[7][6], getStack(3));
+		move(cells[3][7], getStack(2));
+		move(cells[7][2], cells[7][1]);
+		move(cells[6][1], getStack(1));
 	}
 
 	/**
@@ -106,29 +126,55 @@ public class SwingGraphics {
 	}
 	
 	// Highlight spawnable areas
-		// Doesn't handle controlled flags
-	private void highlight(JLabel piece) {
-		Icon icon = piece.getIcon();
-		
-		for (int y = 0; y != cells.length; ++y) {
-			for (int x = 0; x != cells.length; ++x) {
-				if (cells[y][x].getIcon() == null) {
-					
-					// if (logic.canSpawn(x, y, icon) cells[y][x].setBackground(Color.WHITE);
-					
-					boolean color = true;
-					
-					for (JButton cell : getAdjacent(x, y)[0]) {
-						if (cell != null && cell.getIcon() != null && !cell.getIcon().equals(icon)) {
-							color = false;
-							break;
-						}
-					}
-					if (color)
-						cells[y][x].setBackground(Color.WHITE);
-				}
-			}
+		// Doesn't handle dual spawning
+	private void highlight(int player) {
+		if (logic.getMana() == 0.5) {
+			
+			
+			return;
 		}
+		
+		for (int y = 0; y != cells.length; ++y)
+			for (int x = 0; x != cells.length; ++x)
+				if (cells[y][x].getIcon() == null && logic.canSpawn(getAdjacent(x, y)[0], player))
+					cells[y][x].setBackground(Color.WHITE);
+
+	}
+
+	// Tests if p is outside of the grid range
+	private boolean outOfRange(int p) {
+		return p < 0 || p > 8;
+	}
+	
+	// Tests if (x, y) is an invalid grid position
+	private boolean invalidPoint(int x, int y) {
+		return outOfRange(x) || outOfRange(y);
+	}
+
+	// Open/Close the settings window
+	private void openSettings() {
+		grid.setVisible(false);
+		settings.setVisible(true);
+		inSettings = true;
+	}
+	
+	private void openGameList() {
+		grid.setVisible(false);
+		gameList.setVisible(true);
+		inGameList = true;
+	}
+	
+	// Open/Close the game list window
+	private void closeSettings() {
+		grid.setVisible(true);
+		settings.setVisible(false);
+		inSettings = false;
+	}
+	
+	private void closeGameList() {
+		grid.setVisible(true);
+		gameList.setVisible(false);
+		inGameList = false;
 	}
 
 	/**
@@ -237,21 +283,24 @@ public class SwingGraphics {
 		panel_1.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (panel_1.getComponents().length != 0) {
-					self.highlight((JLabel)panel_1.getComponents()[0]);
+					System.out.println("Clicked P1");
+					self.highlight(0);
 				}
 			}
 		});
 		panel_2.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (panel_2.getComponents().length != 0) {
-					self.highlight((JLabel)panel_2.getComponents()[0]);
+					System.out.println("Clicked P2");
+					self.highlight(1);
 				}
 			}
 		});
 		panel_3.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (panel_3.getComponents().length != 0) {
-					self.highlight((JLabel)panel_3.getComponents()[0]);
+					System.out.println("Clicked P3");
+					self.highlight(2);
 				}
 			}
 		});
@@ -259,7 +308,8 @@ public class SwingGraphics {
 			public void mouseClicked(MouseEvent e) {
 				if (panel_4.getComponents().length != 0) {
 					// add in some call to GraphicsLogic
-					self.highlight((JLabel)panel_4.getComponents()[0]);
+					System.out.println("Clicked P4");
+					self.highlight(3);
 				}
 			}
 		});
@@ -296,6 +346,11 @@ public class SwingGraphics {
 		gameList.setBackground(Color.WHITE);
 		gameList.setLayout(new GridLayout(9, 9, 1, 1));
 
+		
+		mseLbl.setHorizontalAlignment(SwingConstants.CENTER);
+		mseLbl.setBounds(313, 590, 175, 14);
+		frame.getContentPane().add(mseLbl);
+		
 		// Game Grid
 		grid.setBackground(Color.BLACK);
 		grid.setBounds(150, 84, 500, 500);
@@ -307,9 +362,13 @@ public class SwingGraphics {
 				cells[y][x] = new JButton(x + ", " + y);
 				cells[y][x].setBackground(Color.BLACK);
 				
-				cells[y][x].addMouseListener(new MouseAdapter() {					
+				cells[y][x].addMouseListener(new MouseAdapter() {
 					public void mouseEntered(MouseEvent e) {
-						((JButton)e.getSource()).setBackground(Color.CYAN);
+						JButton src = (JButton)e.getSource();
+						
+						mseLbl.setText(String.format("(%d, %d) %s", src.getX() / 55, src.getY() / 55, Arrays.toString(logic.getFlags(src))));
+						
+						src.setBackground(Color.CYAN);
 					}
 					
 					public void mouseExited(MouseEvent e) {
@@ -319,6 +378,8 @@ public class SwingGraphics {
 					
 					public void mouseClicked(MouseEvent e) {
 						JButton src = (JButton)e.getSource();
+						
+						//System.out.println(logic.getPiece(src) + ": " + Arrays.toString(logic.getFlags(src)));
 						
 						switch (e.getButton()) {
 							case MouseEvent.BUTTON1:
@@ -344,7 +405,7 @@ public class SwingGraphics {
 				});
 				
 				grid.add(cells[y][x]);
-				logic.add(cells[y][x]);
+				logic.add(cells[y][x], y, x);
 			}
 		}
 		
@@ -356,22 +417,29 @@ public class SwingGraphics {
 		int dx = player < 2 ? 1 : -1;
 		int dy = player % 2 == 0 ? 1 : -1;
 		
-		newPiece(cells[y + dy][x], theme[0][0]);
-		newPiece(cells[y + 2 * dy][x], theme[1][0]);
-		newPiece(cells[y][x + dx], theme[2][0]);
-		newPiece(cells[y][x + 2 * dx], theme[3][0]);
+		newPiece(cells[y + dy][x], player);
+		newPiece(cells[y + 2 * dy][x], player);
+		newPiece(cells[y][x + dx], player);
+		newPiece(cells[y][x + 2 * dx], player);
 	}
 	
-	private void newPiece(JButton block, ImageIcon icon) {
+	private void newPiece(JButton block, int player) {
 		block.setText("");
-		block.setIcon(icon);
+		block.setIcon(theme[player][0]);
+		logic.addPiece(block, player);
 	}
 	
 	private void setUpFlags() {
-		newPiece(cells[1][1], theme[0][1]);
-		newPiece(cells[1][7], theme[1][1]);
-		newPiece(cells[7][1], theme[2][1]);
-		newPiece(cells[7][7], theme[3][1]);
+		newFlag(cells[1][1], 0);
+		newFlag(cells[1][7], 1);
+		newFlag(cells[7][1], 2);
+		newFlag(cells[7][7], 3);
+	}
+	
+	private void newFlag(JButton block, int player) {
+		block.setText("");
+		block.setIcon(theme[player][1]);
+		logic.addFlag(block, player);
 	}
 	
 	/**
@@ -381,6 +449,7 @@ public class SwingGraphics {
 	 * The columns are filled accordingly
 	 * 		0 - Piece Icon
 	 * 		1 - Flag Icon
+	 * 		2 - Piece/Flag Icon
 	 */
 	public void setTheme(ImageIcon[][] icons) {
 		theme = icons;
@@ -415,42 +484,6 @@ public class SwingGraphics {
 	// Get the GraphicsLogic object
 	public GraphicsLogic getLogic() {
 		return logic;
-	}
-	
-	// Tests if p is outside of the grid range
-	private boolean outOfRange(int p) {
-		return p < 0 || p > 8;
-	}
-	
-	// Tests if (x, y) is an invalid grid position
-	private boolean invalidPoint(int x, int y) {
-		return outOfRange(x) || outOfRange(y);
-	}
-
-	// Open/Close the settings window
-	private void openSettings() {
-		grid.setVisible(false);
-		settings.setVisible(true);
-		inSettings = true;
-	}
-	
-	private void openGameList() {
-		grid.setVisible(false);
-		gameList.setVisible(true);
-		inGameList = true;
-	}
-	
-	// Open/Close the game list window
-	private void closeSettings() {
-		grid.setVisible(true);
-		settings.setVisible(false);
-		inSettings = false;
-	}
-	
-	private void closeGameList() {
-		grid.setVisible(true);
-		gameList.setVisible(false);
-		inGameList = false;
 	}
 	
 	/**
@@ -536,9 +569,13 @@ public class SwingGraphics {
 			
 			// Move from cell to cell
 			if (to instanceof JButton) {
-				((JButton) to).setIcon(f.getIcon());
-				((JButton) to).setText("");
+				JButton t = (JButton)to;
+				
+				t.setIcon(f.getIcon());
+				t.setText("");
 				f.setIcon(null);
+				logic.addPiece(t, logic.getPiece(f));			// logic.getCurrPlayer() should also work
+				// move flags
 				
 			// Move from cell to spawn stack
 			} else if (to instanceof JPanel) {
@@ -547,12 +584,15 @@ public class SwingGraphics {
 				f.setIcon(null);
 			}
 			
+			logic.removePiece(f);
+			
 		// Move from spawn stack to cell
 		} else if (from instanceof JPanel) {
 			JButton t = (JButton)to;
 			
 			// get the icon to switch on
 			t.setIcon(((JButton)from.getComponent(0)).getIcon());
+			logic.addPiece(t, logic.getCurrPlayer());
 			from.remove(0);
 		}
 	}
