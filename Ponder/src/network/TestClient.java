@@ -5,13 +5,13 @@ import java.net.Socket;
 public class TestClient {
 	private Socket sock = null;
 	private static final int port = 7777;
-	private static final String IP = "141.219.212.209";
+	private static final String IP = "127.0.0.1";
 
 	public static void main(String[] args) {
 		System.out.println("Running");
 		TestClient client = new TestClient();
 		try {
-			Thread.sleep(60000);
+			Thread.sleep(30000);
 		} catch (Exception e) {
 		}
 		client.close();

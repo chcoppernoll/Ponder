@@ -17,21 +17,27 @@ public class ServerSocketCreator implements Runnable {
 		 * System.out.println("This worked"); } catch (SQLException e1) {
 		 * System.out.println("Didn't connect to db"); e1.printStackTrace(); }
 		 */
-
-		// while (true) {
 		try {
 			serverSocket = new ServerSocket(7777);
-			Socket sock = serverSocket.accept();
-			System.out.println("Accepted");
-			new Thread(new ConnectionHandler(sock)).start();
-		} catch (IOException e) {
+		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			System.out.println("The Socket closed.");
+			e1.printStackTrace();
+		}
+		while (true) {
+			try {
+				Socket sock = serverSocket.accept();
+				System.out.println("Accepted");
+				new Thread(new ConnectionHandler(sock)).start();
+				System.out.println("What up");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.out.println("The Socket closed.");
+				System.exit(1);
+			}
+
 		}
 
 	}
-
-	// }
 
 	public void terminate() {
 		try {
@@ -44,6 +50,7 @@ public class ServerSocketCreator implements Runnable {
 
 		if (serverSocket.isClosed()) {
 			System.out.println("Closed dat shit");
+			System.exit(0);
 		}
 	}
 
