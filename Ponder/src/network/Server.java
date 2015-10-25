@@ -1,10 +1,8 @@
 package network;
 
-import java.io.IOException;
-import java.net.ServerSocket;
+import java.util.Scanner;
 
 public class Server {
-	private static ServerSocket sock = null;
 
 	public static void main(String[] args) {
 		Server server = new Server();
@@ -12,16 +10,20 @@ public class Server {
 	}
 
 	public void run() {
-		System.out.println("Accepting");
-		try {
-			sock = new ServerSocket(7777);
-			sock.accept();
-			System.out.println("Accepted");
-			sock.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Failed");
-			e.printStackTrace();
+		ServerSocketCreator create = new ServerSocketCreator();
+		Thread serverSock = new Thread(create);
+		serverSock.start();
+
+		Scanner read = new Scanner(System.in);
+		char input = 'N';
+
+		while (input != 'Y') {
+			System.out.println("Would you like to stop the server? Y/N");
+			input = read.nextLine().charAt(0);
+			System.out.println(input);
+
 		}
+
+		create.terminate();
 	}
 }
