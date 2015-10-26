@@ -45,9 +45,16 @@ public class SwingGraphicsRaw {
 	 * Work on artwork
 	 */
 	
-	// TODO
+	// TODO Game Logic
 	/*
-	 * 
+	 * A piece can only control 2+ flags, if one of them is the piece's owner
+	 * The corner rule
+	 * Spawn delay
+	 * End turn (Possible automatic end turn)
+	 * Check that a piece doesn't exist in the "to" spot when moving
+	 * Undo moves
+	 * No immediate backward jumps
+	 * Moving jumped pieces to spawn (if different owner)
 	 */
 	
 	// PROBLEM
@@ -101,6 +108,9 @@ public class SwingGraphicsRaw {
 		move(cells[3][1], getStack(0));
 		move(cells[2][1], getStack(0));
 		move(cells[1][2], cells[1][1]);
+		move(cells[1][3], cells[1][2]);
+		
+		logic.nextTurn();
 	}
 
 	/**
@@ -380,15 +390,36 @@ public class SwingGraphicsRaw {
 							case MouseEvent.BUTTON1:			// LEFT-CLICK
 								switch (logic.click(src)) {
 									case 1:				// logic.SPAWN_EVENT
-										// doesn't check for valid spawn (currently)
 										if (logic.spawn(src, logic.getCurrPlayer())) {
 											move(logic.getStack(), src);
 											logic.setStack(null);
 											self.color(Color.BLACK);
 										}
+										
 										break;
-									//case 2:			// logic.MOVE_EVENT (BUILD_MOVE_EVENT ?)
+									case 2:				// logic.SELECT_EVENT
+										System.out.println("Select Piece");
+										// Need to ensure that a piece exists at src
+										
+										logic.select(src);
+										logic.setColor(src, Color.BLUE);
+										
+										break;
+									case 3:			// logic.MOVE_EVENT (BUILD_MOVE_EVENT ?)
+										// Need to add in a way to end movement (click on the same tile)
+										
+										// Being able to jump backwards will be handled by checking the move queue
+										if (logic.canMove(logic.getFocus(), src)) {
+											System.out.println("Moving");
+											move(logic.getFocus(), src);
+											logic.select(src);
+										}
+										
+										break;
 									default:
+										System.out.println("Defocusing");
+										logic.setColor(src, logic.getColor(src) == Color.BLACK ? Color.GREEN : Color.BLACK);
+										logic.select(null);
 								}
 								
 								break;
@@ -520,7 +551,7 @@ public class SwingGraphicsRaw {
 					}
 				}
 				
-				logic.setMoved(t);
+				//logic.setMoved(t);								// addPiece sets has_moved
 				
 			// Move from cell to spawn stack
 			} else if (to instanceof JPanel) {
@@ -548,7 +579,7 @@ public class SwingGraphicsRaw {
 			// get the icon to switch on
 			t.setIcon(((JLabel)from.getComponent(0)).getIcon());
 			logic.addPiece(t, logic.getCurrPlayer());					// Relies on current player (Subject to abuse depending on how stack selection works)
-			logic.setMoved(t);
+			//logic.setMoved(t);										// addPiece sets has_moved
 			
 			from.remove(0);
 			from.revalidate();

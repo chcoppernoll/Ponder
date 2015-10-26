@@ -12,8 +12,6 @@ class GridData {
 	public Color color = Color.BLACK;
 	public boolean has_moved = false;
 	
-	// Temporary compatibility
-	public boolean isFocus;
 }
 
 class Position {
@@ -52,9 +50,10 @@ class Position {
 
 public class PonderLogic implements GameLogic<JButton> {
 	private double mana = 1.;
-	private int curr_player = 0;
+	private int curr_player = -1;
 	private JButton[] flags = new JButton[4];
 	private JPanel stack;
+	private JButton focus = null;
 	private HashMap<JButton, GridData> data = new HashMap<>();
 	private HashMap<Position, JButton> grid = new HashMap<>();		// If two objects have the same position only one is stored
 	
@@ -121,7 +120,8 @@ public class PonderLogic implements GameLogic<JButton> {
 		Position a_p = positionOf(a), b_p = positionOf(b);
 		int dx = a_p.x - b_p.x, dy = a_p.y - b_p.y;
 		
-		return grid.get(b_p.add(dx, dy));
+		JButton ret = grid.get(b_p.add(dx / 2, dy / 2));		
+		return getPieceOwner(ret) != -1 ? ret : null;
 	}
 		
     // Returns whether a and b are in sliding distance
@@ -153,13 +153,13 @@ public class PonderLogic implements GameLogic<JButton> {
 	// Add a piece at the given position controlled by the given player
 	public void addPiece(JButton a, int player) {
 		data.get(a).owner = player;
+		data.get(a).has_moved = true;
 		grid.put(positionOf(a), a);
 	}
 	
 	// Remove the piece at the given position
 	public void removePiece(JButton a) {
 		addPiece(a, -1);
-		//grid.remove(positionOf(a), a);
 		grid.put(positionOf(a), null);
 	}
 	
@@ -202,6 +202,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		return false;
 	}
 	
+	@Deprecated
 	public void setMoved(JButton cell) {
 		data.get(cell).has_moved = true;
 	}
@@ -216,10 +217,7 @@ public class PonderLogic implements GameLogic<JButton> {
 	}
 	
 	public void setColor(JButton cell, Color color) {
-		if (!data.get(cell).isFocus) {
-			cell.setBackground(color);
-			data.get(cell).color = color;
-		}
+		cell.setBackground(data.get(cell).color = color);
 	}
 
 	public JPanel getStack() {
@@ -239,6 +237,23 @@ public class PonderLogic implements GameLogic<JButton> {
 	}
 	
 	
+	// Workspace methods
+	public boolean canMove(JButton cell) {
+		return getPieceOwner(cell) != -1 && !data.get(cell).has_moved;
+	}
+	
+	public boolean canMove(JButton from, JButton to) {
+		return (canSlide(from, to) && !data.get(from).has_moved) || jmpPiece(from, to) != null;
+	}
+	
+	public void select(JButton cell) {
+		focus = cell;
+	}
+	
+	public JButton getFocus() {
+		return focus;
+	}
+	
 	
 	// temporary methods for compatability
 	public int getPieceOwner(JButton cell) {
@@ -250,13 +265,13 @@ public class PonderLogic implements GameLogic<JButton> {
 	}
 	
 	public boolean isClicked(JButton elem) {
-		return data.get(elem).isFocus;
+		return elem == focus;
 	}
 	
 	public int click(JButton elem) {
-		if (stack != null) return 1;
-		data.get(elem).isFocus = !data.get(elem).isFocus;
-		data.get(elem).color = data.get(elem).isFocus ? Color.GREEN : Color.BLACK;
+		if (stack != null) return 1;						// SPAWN_EVENT
+		if (focus == null && canMove(elem)) return 2;		// SELECT_EVENT
+		if (focus != null && focus != elem) return 3;		// MOVE_EVENT
 		
 		return 0;
 	}
@@ -266,6 +281,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		curr_player = (curr_player + 1) % 4;
 		
 		for (JButton piece : grid.values())
-			data.get(piece).has_moved = false;
+			if (piece != null)
+				data.get(piece).has_moved = false;
 	}
 }
