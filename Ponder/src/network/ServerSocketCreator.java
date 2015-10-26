@@ -26,9 +26,9 @@ public class ServerSocketCreator implements Runnable {
 		while (true) {
 			try {
 				Socket sock = serverSocket.accept();
-				System.out.println("Accepted");
+				System.out.println("Client Accepted");
 				new Thread(new ConnectionHandler(sock)).start();
-				System.out.println("What up");
+				System.out.println("Accepting More Clients");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				System.out.println("The Socket closed.");

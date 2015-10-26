@@ -5,7 +5,7 @@ import java.net.Socket;
 public class TestClient {
 	private Socket sock = null;
 	private static final int port = 7777;
-	private static final String IP = "127.0.0.1";
+	private static final String IP = "141.219.153.173";
 
 	public static void main(String[] args) {
 		System.out.println("Running");
