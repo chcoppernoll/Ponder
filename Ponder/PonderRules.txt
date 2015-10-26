@@ -1,0 +1,48 @@
+These rules assume 4-players with a non-infinite board
+
+Movement Rules
+	Every turn a player can choose to move 1 piece
+	There are two types of movements, slides and jumps
+		A player can only do one of these two types of moves per turn
+	A slide is when a piece is moved into any adjacent tile
+		A slide immediately ends the players turn
+	A jump is when a piece is moved over another piece (think checkers)
+		This is only possible if there is not another piece on the opposite side of the jumped piece
+		A jump is basically an extended slide (as far as piece movement, etc. is concerned)
+		No jumping back (in order to "undo" a move)
+		If jumping an enemy's piece, that piece is immediately removed from the board (exiled) after the jump is completed
+			Any flags the piece "held" remain on the board
+		A jump ends when there are no more possible jumps or the player stops movement
+
+Spawning Rules
+	Exiled pieces have to spend at minimum 1 turn before they are "spawn-able"
+		ie. Player has to play one turn after pieces are exiled before they can be spawned
+	You can only spawn exiled pieces
+		You can spawn 2 pieces in 1 turn, if both pieces are spawned adjacent to your flag
+		Otherwise, you can spawn a maximum of 1 piece per turn
+	You can spawn a piece on any tile excepting
+		Tiles with a piece or flag
+		Tiles adjacent to an unoccupied flag
+		Tiles adjacent to an enemy piece
+	Spawning occurs before the movement phase
+		Spawning is optional (can be defered to a later turn)
+		Spawned pieces cannot be moved the turn they are spawned
+
+Victory Rules
+	The goal of the game is to have control of a set number of flags at the end of your turn
+		The exact number needed is player and mode dependent
+		For 4v4, you need control of 3 flags	
+
+Other Rules
+	No piece may control more than 1 flag at any time unless one of those flags is the player's
+		Otherwise the old flag is "dropped" before the piece is moved
+	If a piece has no possible slides and is not adjacent to a friendly piece, that piece is exiled
+		- "Corner" rule
+
+Board State
+	9x9 for 4x4, non-infinite
+		Flags are placed one tile in (towards the center) from the four corners
+		Player pieces are aligned radially from the flag (with two pieces have the same x coordinate and two having the same y coordinate)
+	12x12 for 4x4, infinite
+		Same placement as 9x9, flags are placed two tiles in
+
