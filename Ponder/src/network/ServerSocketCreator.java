@@ -49,7 +49,7 @@ public class ServerSocketCreator implements Runnable {
 		}
 
 		if (serverSocket.isClosed()) {
-			System.out.println("Closed dat shit");
+			System.out.println("Closed");
 			System.exit(0);
 		}
 	}
