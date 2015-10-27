@@ -278,7 +278,7 @@ public class SwingGraphics {
 		SwingGraphics self = this;
 		panel_1.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (logic.canPlayerSpawn(0)) {
+				if (allow_local_input && logic.canPlayerSpawn(0)) {
 					System.out.println("Clicked P1");
 
 					// if (!logic.canSpawn(0)) return;
@@ -291,7 +291,7 @@ public class SwingGraphics {
 		});
 		panel_2.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (logic.canPlayerSpawn(1)) {
+				if (allow_local_input && logic.canPlayerSpawn(1)) {
 					System.out.println("Clicked P2");
 
 					boolean clicked = logic.getStack() == getStack(1);
@@ -302,7 +302,7 @@ public class SwingGraphics {
 		});
 		panel_3.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (logic.canPlayerSpawn(2)) {
+				if (allow_local_input && logic.canPlayerSpawn(2)) {
 					System.out.println("Clicked P3");
 
 					boolean clicked = logic.getStack() == getStack(2);
@@ -313,7 +313,7 @@ public class SwingGraphics {
 		});
 		panel_4.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (logic.canPlayerSpawn(3)) {
+				if (allow_local_input && logic.canPlayerSpawn(3)) {
 					System.out.println("Clicked P4");
 					
 					boolean clicked = logic.getStack() == getStack(3);
@@ -399,6 +399,8 @@ public class SwingGraphics {
 					}
 					
 					public void mouseClicked(MouseEvent e) {
+						if (!allow_local_input) return;
+						
 						JButton src = (JButton)e.getSource();
 						
 						switch (e.getButton()) {
