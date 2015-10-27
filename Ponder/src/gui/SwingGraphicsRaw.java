@@ -30,7 +30,7 @@ public class SwingGraphicsRaw {
 	
 	private PonderLogic logic;
 	
-	private boolean inSettings = false, inGameList = false;
+	private boolean inSettings = false, inGameList = false, allow_local_input = true;
 	private JPanel settings = new JPanel(), gameList = new JPanel(), grid = new JPanel();		// grid??
 	
 	// TODO Alex
@@ -41,20 +41,21 @@ public class SwingGraphicsRaw {
 	
 	// TODO Grayson
 	/*
-	 * Start working on game logic and integration with the graphics
 	 * Work on artwork
+	 * Add javadoc comments to all methods (they appear on hover)
+	 * Rework the PonderLogic API (it's getting slightly unruly)
+	 * Remember to implement the corner rule in the game loop
 	 */
 	
 	// TODO Game Logic
 	/*
-	 * A piece can only control 2+ flags, if one of them is the piece's owner
-	 * The corner rule
+	 * Rework all code to use the spawn stacks
+	 * General spawn logic improvements (move away from needing to reference the graphical panels)
 	 * Spawn delay
+	 * A piece can only control 2+ flags, if one of them is the piece's owner
 	 * End turn (Possible automatic end turn)
-	 * Check that a piece doesn't exist in the "to" spot when moving
-	 * Undo moves
 	 * No immediate backward jumps
-	 * Moving jumped pieces to spawn (if different owner)
+	 * Undo moves
 	 */
 	
 	// PROBLEM
@@ -94,7 +95,7 @@ public class SwingGraphicsRaw {
 		// Game Data Text
 		((JLabel)gameHeader.getComponent(0)).setText("Game Data Goes Here");
 		
-		// Delete old pieces
+		// Delete old pieces ?
 		
 		for (int i = 0; i != players.length; ++i)
 			setUpPieces(i);
@@ -109,6 +110,7 @@ public class SwingGraphicsRaw {
 		move(cells[2][1], getStack(0));
 		move(cells[1][2], cells[1][1]);
 		move(cells[1][3], cells[1][2]);
+		move(cells[1][5], cells[1][4]);
 		
 		logic.nextTurn();
 	}
@@ -275,9 +277,11 @@ public class SwingGraphicsRaw {
 		SwingGraphicsRaw self = this;
 		panel_1.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (logic.getCurrPlayer() == 0 && panel_1.getComponents().length != 0 && logic.getMana() > 0) {
+				if (logic.canPlayerSpawn(0) && panel_1.getComponents().length != 0) {
 					System.out.println("Clicked P1");
 
+					// if (!logic.canSpawn(0)) return;
+					
 					boolean clicked = logic.getStack() == getStack(0);
 					logic.setStack(clicked ? null : getStack(0));
 					self.highlight(0, clicked ? Color.BLACK : Color.WHITE);
@@ -286,7 +290,7 @@ public class SwingGraphicsRaw {
 		});
 		panel_2.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (logic.getCurrPlayer() == 1 && panel_2.getComponents().length != 0 && logic.getMana() > 0) {
+				if (logic.canPlayerSpawn(1) && panel_2.getComponents().length != 0) {
 					System.out.println("Clicked P2");
 
 					boolean clicked = logic.getStack() == getStack(1);
@@ -297,7 +301,7 @@ public class SwingGraphicsRaw {
 		});
 		panel_3.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (logic.getCurrPlayer() == 2 && panel_3.getComponents().length != 0 && logic.getMana() > 0) {
+				if (logic.canPlayerSpawn(2) && panel_3.getComponents().length != 0) {
 					System.out.println("Clicked P3");
 
 					boolean clicked = logic.getStack() == getStack(2);
@@ -308,7 +312,7 @@ public class SwingGraphicsRaw {
 		});
 		panel_4.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (logic.getCurrPlayer() == 3 && panel_4.getComponents().length != 0 && logic.getMana() > 0) {
+				if (logic.canPlayerSpawn(3) && panel_4.getComponents().length != 0) {
 					System.out.println("Clicked P4");
 					
 					boolean clicked = logic.getStack() == getStack(3);
@@ -370,11 +374,21 @@ public class SwingGraphicsRaw {
 				cells[y][x].setBackground(Color.BLACK);
 				
 				cells[y][x].addMouseListener(new MouseAdapter() {
+					private void updateMouseText(JButton cell) {
+						String out = logic.positionOf(cell) + " [ ";
+						
+						boolean[] flags = logic.has_flags(cell);
+						for (int i = 0; i != flags.length; ++i)
+							out += (flags[i] ? i + 1 : "X") + (i != flags.length - 1 ? ", " : " ");
+						
+						mseLbl.setText(out + "]");
+						//mseLbl.setText(String.format("%s %s", logic.positionOf(cell), Arrays.toString(logic.has_flags(cell))));
+					}
+					
 					public void mouseEntered(MouseEvent e) {
 						JButton src = (JButton)e.getSource();
 						
-						mseLbl.setText(String.format("%s %s", logic.positionOf(src), Arrays.toString(logic.has_flags(src))));
-						
+						updateMouseText(src);
 						src.setBackground(Color.CYAN);
 					}
 					
@@ -388,32 +402,65 @@ public class SwingGraphicsRaw {
 						
 						switch (e.getButton()) {
 							case MouseEvent.BUTTON1:			// LEFT-CLICK
+								// Select contextual operations
 								switch (logic.click(src)) {
 									case 1:				// logic.SPAWN_EVENT
+										// Chosen if a stack was not previously selected (logic.stack != null)
+
 										if (logic.spawn(src, logic.getCurrPlayer())) {
-											move(logic.getStack(), src);
+											move(logic.getStack(), src);				// Spawn the piece
 											logic.setStack(null);
-											self.color(Color.BLACK);
+											self.color(Color.BLACK);					// Remove the spawn highlighting
 										}
 										
 										break;
 									case 2:				// logic.SELECT_EVENT
+										// Chosen if the element can be moved (logic.focus == null && canMove(elem))
+										
 										System.out.println("Select Piece");
-										// Need to ensure that a piece exists at src
 										
 										logic.select(src);
 										logic.setColor(src, Color.BLUE);
 										
 										break;
 									case 3:			// logic.MOVE_EVENT (BUILD_MOVE_EVENT ?)
-										// Need to add in a way to end movement (click on the same tile)
+										// Chosen if an element was previously selected (logic.focus != null && logic.focus != elem)
+										
+										// End movement -> piece goes out of focus
 										
 										// Being able to jump backwards will be handled by checking the move queue
-										if (logic.canMove(logic.getFocus(), src)) {
-											System.out.println("Moving");
-											move(logic.getFocus(), src);
-											logic.select(src);
+										JButton from = logic.getFocus(), next = null;
+										
+										if (logic.getPieceOwner(src) != -1) return;								// Can't move to a tile where a piece exists
+										
+										if (logic.canSlide(from, src)) {
+											if (logic.hasMoved(from)) return;										// Movement ended
+											
+										} else {
+											JButton jmpd = logic.jmpPiece(from, src);
+											
+											// If jumping a piece (doesn't care about hasMoved since you can't select a piece that has moved)
+												// Need to add a check against jumping back
+											//if (jmpd != null && !logic.illegal(from, to)) {
+											// or have logic.jmpPiece return null on an illegal jump
+											if (jmpd != null) {// && to != logic.getLastJump().from) {
+												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from))			// Despawn the piece
+													move(jmpd, getStack(logic.getPieceOwner(jmpd)));
+												
+												//next = logic.canMove(src) ? src : null;
+												next = src;
+											} else
+												return;																// Movement ended
+
 										}
+
+										System.out.println("Moving");
+										logic.enterMovePhase();						// Prevent spawning actions
+										//logic.addMove(src);							// Add a move to the event feed
+										move(from, src);							// Perform the move
+										
+										logic.select(next);							// Select the new tile (or null if no more movement)
+										updateMouseText(src);						// Update text
 										
 										break;
 									default:
@@ -585,5 +632,20 @@ public class SwingGraphicsRaw {
 			from.revalidate();
 			from.repaint();
 		}
+	}
+
+	// Allows local input to be used
+	public void acceptInput() {
+		allow_local_input = true;
+	}
+	
+	// Stops local input from being used
+	public void stopInput() {
+		allow_local_input = false;
+	}
+
+	// Placeholder for running non-local moves
+	public void runEvent() {
+		
 	}
 }

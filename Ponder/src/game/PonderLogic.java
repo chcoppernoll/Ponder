@@ -2,6 +2,8 @@ package game;
 
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -51,11 +53,16 @@ class Position {
 public class PonderLogic implements GameLogic<JButton> {
 	private double mana = 1.;
 	private int curr_player = -1;
+	private boolean in_move_phase = false;
 	private JButton[] flags = new JButton[4];
 	private JPanel stack;
 	private JButton focus = null;
 	private HashMap<JButton, GridData> data = new HashMap<>();
 	private HashMap<Position, JButton> grid = new HashMap<>();		// If two objects have the same position only one is stored
+	
+	//private Queue<JButton> event_queue = null;
+	@SuppressWarnings("unchecked")
+	private PriorityQueue<Integer>[] spawn_sets = (PriorityQueue<Integer>[])new PriorityQueue[4];
 	
 	private boolean invalidPoint(Position pos) {
 		return (pos.y < 0 || pos.y > 8) || (pos.x < 0 || pos.y > 8);
@@ -88,7 +95,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		return new Position(x, y);
 	}
 	
-	private boolean canSpawn(Position pos, int player) {
+	private boolean canSpawn(Position pos, int player) {		
 		for (JButton adj : adjacents(pos)[0]) {
 			if (adj != null) {
 				int cell_piece = data.get(adj).owner;
@@ -113,9 +120,11 @@ public class PonderLogic implements GameLogic<JButton> {
 		return spawnable;
 	}
 	
-	// Returns the piece jumped by a->b (null if none)
+	// Returns the piece jumped by a->b (null if none or illegal)
     public JButton jmpPiece(JButton a, JButton b) {
 		if (!canJmp(a, b)) return null;
+		
+		// Add in check to prevent backwards move
 		
 		Position a_p = positionOf(a), b_p = positionOf(b);
 		int dx = a_p.x - b_p.x, dy = a_p.y - b_p.y;
@@ -189,6 +198,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		return -1;
 	}
 
+	// Attempt to spawn a player's piece at the given cell and return success
 	public boolean spawn(JButton cell, int player) {
 		if (canSpawn(positionOf(cell), player)) {
 			double cost = canSlide(cell, flags[player]) ? 0.5 : 1.0;
@@ -200,11 +210,6 @@ public class PonderLogic implements GameLogic<JButton> {
 		}
 		
 		return false;
-	}
-	
-	@Deprecated
-	public void setMoved(JButton cell) {
-		data.get(cell).has_moved = true;
 	}
 	
 	public double getMana() {
@@ -238,12 +243,33 @@ public class PonderLogic implements GameLogic<JButton> {
 	
 	
 	// Workspace methods
+	/**
+	 * Returns whether the selected piece is capable of moving
+	 */
 	public boolean canMove(JButton cell) {
 		return getPieceOwner(cell) != -1 && !data.get(cell).has_moved;
 	}
 	
+	/**
+	 * Returns whether a move can occur between from and to
+	 */
 	public boolean canMove(JButton from, JButton to) {
 		return (canSlide(from, to) && !data.get(from).has_moved) || jmpPiece(from, to) != null;
+	}
+	
+	public void enterMovePhase() {
+		in_move_phase = true;
+	}
+	
+	public boolean canPlayerSpawn(int player) {
+		return !in_move_phase && curr_player == player && mana > 0;
+	}
+	
+	/**
+	 * Checks whether a piece has moved already
+	 */
+	public boolean hasMoved(JButton cell) {
+		return data.get(cell).has_moved;
 	}
 	
 	public void select(JButton cell) {
@@ -253,7 +279,7 @@ public class PonderLogic implements GameLogic<JButton> {
 	public JButton getFocus() {
 		return focus;
 	}
-	
+
 	
 	// temporary methods for compatability
 	public int getPieceOwner(JButton cell) {
@@ -279,6 +305,7 @@ public class PonderLogic implements GameLogic<JButton> {
 	public void nextTurn() {
 		mana = 1;
 		curr_player = (curr_player + 1) % 4;
+		in_move_phase = false;
 		
 		for (JButton piece : grid.values())
 			if (piece != null)
