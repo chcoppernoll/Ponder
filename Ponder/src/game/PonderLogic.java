@@ -9,7 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 class GridData {
-	public int owner = -1;
+	public int owner = -1, num_flags = 0;
 	public boolean[] has_flag = new boolean[4];
 	public Color color = Color.BLACK;
 	public boolean has_moved = false;
@@ -95,7 +95,9 @@ public class PonderLogic implements GameLogic<JButton> {
 		return new Position(x, y);
 	}
 	
-	private boolean canSpawn(Position pos, int player) {		
+	private boolean canSpawn(Position pos, int player) {
+		if (spawn_sets[player].isEmpty() || spawn_sets[player].peek() != 0) return false;
+		
 		for (JButton adj : adjacents(pos)[0]) {
 			if (adj != null) {
 				int cell_piece = data.get(adj).owner;
@@ -110,19 +112,20 @@ public class PonderLogic implements GameLogic<JButton> {
 	
 	// Returns whether the player can spawn at the given position
 	public boolean canSpawn(JButton a, int player) {
-		if (mana < .5 || data.get(a).owner != -1 || (flags[0] == a || flags[1] == a || flags[2] == a || flags[3] == a)) return false;
+		if (mana < .5 || getPieceOwner(a) != -1 || flags[0] == a || flags[1] == a || flags[2] == a || flags[3] == a)
+			return false;
 		
 		boolean spawnable = canSpawn(positionOf(a), player);
 		
 		// This is only true if the player has control of their flag
-		if (mana == .5) spawnable = spawnable && canSlide(a, flags[player]);
+		if (spawnable && mana == .5) spawnable = spawnable && canSlide(a, flags[player]);
 		
 		return spawnable;
 	}
 	
 	// Returns the piece jumped by a->b (null if none or illegal)
     public JButton jmpPiece(JButton a, JButton b) {
-		if (!canJmp(a, b)) return null;
+		if (!canJmp(a, b) || !canCapFlag(a, b)) return null;
 		
 		// Add in check to prevent backwards move
 		
@@ -157,6 +160,9 @@ public class PonderLogic implements GameLogic<JButton> {
 				grid.put(new Position(x, y), board[y][x]);
 			}
 		}
+		
+		for (int i = 0; i != spawn_sets.length; ++i)
+			spawn_sets[i] = new PriorityQueue<>(4);
 	}
 	
 	// Add a piece at the given position controlled by the given player
@@ -175,12 +181,14 @@ public class PonderLogic implements GameLogic<JButton> {
 	// Add a flag at the given position for the given player
 	public void addFlag(JButton a, int player) {
 		data.get(a).has_flag[player] = true;
+		data.get(a).num_flags++;
 		flags[player] = a;
 	}
 	
 	// Remove the flag at the given position of the given player
 	public void removeFlag(JButton a, int player) {
 		data.get(a).has_flag[player] = false;
+		data.get(a).num_flags--;
 		flags[player] = null;
 	}
 	
@@ -233,7 +241,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		stack = n_stack;
 	}
 
-	public boolean[] has_flags(JButton cell) {
+	public boolean[] flagsOn(JButton cell) {
 		return data.get(cell).has_flag;
 	}
 	
@@ -262,8 +270,32 @@ public class PonderLogic implements GameLogic<JButton> {
 	}
 	
 	public boolean canPlayerSpawn(int player) {
-		return !in_move_phase && curr_player == player && mana > 0;
+		return !in_move_phase && curr_player == player && mana > 0 && !spawn_sets[player].isEmpty() && spawn_sets[player].peek() <= 0;
 	}
+	
+	public void addToSpawn(int player) {
+		spawn_sets[player].add(1);
+	}
+
+	public void popFromSpawn(int player) {
+		spawn_sets[player].poll();
+	}
+	
+	public boolean canCapFlag(JButton piece, JButton tile) {
+		switch (data.get(piece).num_flags) {
+			case 0:													// Piece has no flags
+				if (data.get(tile).num_flags <= 1)					// If the target tile has 1 or less flags
+					return true;
+			case 1:													// Piece has 1 flag
+				int owner = getPieceOwner(piece);
+				if (data.get(tile).num_flags >= 1)					// Determine if one of the tiles has the players flag
+					return flagsOn(tile)[owner] || flagsOn(piece)[owner];
+			default:												// Piece has 2+ flags
+				return true;										// One of the flags must be the players
+		}
+	}
+	
+	// Non-workspace
 	
 	/**
 	 * Checks whether a piece has moved already
@@ -280,6 +312,17 @@ public class PonderLogic implements GameLogic<JButton> {
 		return focus;
 	}
 
+// Really temporary method (for testing purposes)
+	public void decStackDelay(int player) {
+		if (spawn_sets[player].isEmpty()) return;
+		
+		PriorityQueue<Integer> replacement = new PriorityQueue<>(4);
+		
+		for (Integer i : spawn_sets[player])
+			replacement.add(i > 0 ? --i : i);
+		
+		spawn_sets[player] = replacement;
+	}
 	
 	// temporary methods for compatability
 	public int getPieceOwner(JButton cell) {
@@ -304,6 +347,9 @@ public class PonderLogic implements GameLogic<JButton> {
 	
 	public void nextTurn() {
 		mana = 1;
+		
+		// Decrement the priority queue
+		
 		curr_player = (curr_player + 1) % 4;
 		in_move_phase = false;
 		
@@ -311,4 +357,5 @@ public class PonderLogic implements GameLogic<JButton> {
 			if (piece != null)
 				data.get(piece).has_moved = false;
 	}
+
 }
