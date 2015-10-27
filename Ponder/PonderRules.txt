@@ -24,7 +24,7 @@ Spawning Rules
 		Tiles with a piece or flag
 		Tiles adjacent to an unoccupied flag
 		Tiles adjacent to an enemy piece
-	Spawning occurs before the movement phase
+	Spawning must occur before the movement phase
 		Spawning is optional (can be defered to a later turn)
 		Spawned pieces cannot be moved the turn they are spawned
 
