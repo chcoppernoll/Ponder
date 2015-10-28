@@ -56,8 +56,15 @@ public class SwingGraphics {
 	 * Undo moves
 	 */
 	
-	// PROBLEM
-	// How to represent Flags and pieces on the same tile (Added a Mouse Label)
+	// Sprint 2
+	/*
+	 * Game Loop
+	 * Event classes
+	 * Polymorphic player classes
+	 * Complete local play
+	 * Basic server-client communication within the main game
+	 * Server/Database improvements
+	 */
 
 	/**
 	 * Create the application.
@@ -93,6 +100,8 @@ public class SwingGraphics {
 	 * Setup a new game state
 	 */
 	public void reset() {		
+		logic.init(cells);
+		
 		// Game Data Text
 		((JLabel)gameHeader.getComponent(0)).setText("Game Data Goes Here");
 		
@@ -115,7 +124,6 @@ public class SwingGraphics {
 		move(cells[1][3], cells[1][2]);
 		move(cells[1][5], cells[1][4]);
 
-		logic.init(cells);
 		logic.nextTurn();
 	}
 
