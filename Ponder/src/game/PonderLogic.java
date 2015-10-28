@@ -64,11 +64,26 @@ public class PonderLogic implements GameLogic<JButton> {
 	@SuppressWarnings("unchecked")
 	private PriorityQueue<Integer>[] spawn_sets = (PriorityQueue<Integer>[])new PriorityQueue[4];
 	
+	/**
+	 * @param pos
+	 * @return whether pos is a valid grid position
+	 */
 	private boolean invalidPoint(Position pos) {
 		return (pos.y < 0 || pos.y > 8) || (pos.x < 0 || pos.y > 8);
 	}
 	
-	// Returns the list of adjacent tiles to the given position
+	/**
+	 * Get the list of adjacent points to a given position
+	 * [0] is the list of all points p where canSlide(pos, p) is true
+	 * [1] is the list of all points p where canJmp(pos, p) is true
+	 * 
+	 * The elements in the array are arranged as so
+	 * 0 3 5
+	 * 1 X 6
+	 * 2 4 7
+	 * @param pos
+	 * @return
+	 */
 	public JButton[][] adjacents(Position pos) {
 		if (invalidPoint(pos)) return null;
 		
@@ -87,6 +102,11 @@ public class PonderLogic implements GameLogic<JButton> {
 		return ret;
 	}
 	
+	/**
+	 * Get the position of the given tile
+	 * @param cell
+	 * @return
+	 */
 	public Position positionOf(JButton cell) {
 		return new Position(cell.getX() / 55, cell.getY() / 55);
 	}
@@ -95,6 +115,12 @@ public class PonderLogic implements GameLogic<JButton> {
 		return new Position(x, y);
 	}
 	
+	/**
+	 * Determine whether it is physically possible for the player to spawn at the given position
+	 * @param pos
+	 * @param player
+	 * @return
+	 */
 	private boolean canSpawn(Position pos, int player) {
 		if (spawn_sets[player].isEmpty() || spawn_sets[player].peek() != 0) return false;
 		
@@ -110,7 +136,12 @@ public class PonderLogic implements GameLogic<JButton> {
 		return true;
 	}
 	
-	// Returns whether the player can spawn at the given position
+	/**
+	 * Determine whether the player can spawn at the given tile, accounting for mana and other pieces
+	 * @param a
+	 * @param player
+	 * @return
+	 */
 	public boolean canSpawn(JButton a, int player) {
 		if (mana < .5 || getPieceOwner(a) != -1 || flags[0] == a || flags[1] == a || flags[2] == a || flags[3] == a)
 			return false;
@@ -123,7 +154,12 @@ public class PonderLogic implements GameLogic<JButton> {
 		return spawnable;
 	}
 	
-	// Returns the piece jumped by a->b (null if none or illegal)
+	/**
+	 * Determine the piece jumped by moving from a -> b
+	 * @param a
+	 * @param b
+	 * @return null if a->b is an illegal move
+	 */
     public JButton jmpPiece(JButton a, JButton b) {
 		if (!canJmp(a, b) || !canCapFlag(a, b)) return null;
 		
@@ -136,20 +172,32 @@ public class PonderLogic implements GameLogic<JButton> {
 		return getPieceOwner(ret) != -1 ? ret : null;
 	}
 		
-    // Returns whether a and b are in sliding distance
+    /**
+     * @param a
+     * @param b
+     * @return whether a and b are in sliding distance of each other
+     */
 	public boolean canSlide(JButton a, JButton b) {
 		double dist = positionOf(a).distance(positionOf(b));
 		
 		return dist == 1 || dist == Math.sqrt(2);
 	}
 	
-	// Returns whether a and b are in jumping distance
+	/**
+	 * @param a
+	 * @param b
+	 * @return whether a and b are in jumping distance of each other
+	 */
 	public boolean canJmp(JButton a, JButton b) {
 		double dist = positionOf(a).distance(positionOf(b));
 		
 		return dist == 2 || dist == Math.sqrt(8);
 	}
 	
+	/**
+	 * Init the logic state to the passed board
+	 * @param board
+	 */
 	public void init(JButton[][] board) {
 		if (data.size() > 0) data.clear();
 		if (grid.size() > 0) grid.clear();
@@ -165,34 +213,54 @@ public class PonderLogic implements GameLogic<JButton> {
 			spawn_sets[i] = new PriorityQueue<>(4);
 	}
 	
-	// Add a piece at the given position controlled by the given player
+	/**
+	 * Add a piece at the given position. The piece is controlled by the given player
+	 * @param a
+	 * @param player
+	 */
 	public void addPiece(JButton a, int player) {
 		data.get(a).owner = player;
 		data.get(a).has_moved = true;
 		grid.put(positionOf(a), a);
 	}
 	
-	// Remove the piece at the given position
+	/**
+	 * Remove the piece at the given position
+	 * This can be chained with addPiece to implement movement
+	 * @param a
+	 */
 	public void removePiece(JButton a) {
 		addPiece(a, -1);
 		grid.put(positionOf(a), null);
 	}
 	
-	// Add a flag at the given position for the given player
+	/**
+	 * Add the given player's flag at the given tile
+	 * @param a
+	 * @param player
+	 */
 	public void addFlag(JButton a, int player) {
 		data.get(a).has_flag[player] = true;
 		data.get(a).num_flags++;
 		flags[player] = a;
 	}
 	
-	// Remove the flag at the given position of the given player
+	/**
+	 * Remove the given player's flag from the position
+	 * Can be chained with addFlag to implement movement
+	 * @param a
+	 * @param player
+	 */
 	public void removeFlag(JButton a, int player) {
 		data.get(a).has_flag[player] = false;
 		data.get(a).num_flags--;
 		flags[player] = null;
 	}
 	
-	// Returns the player_id of the victor or -1 if no winners
+	/**
+	 * Determine the id of the winner of the game
+	 * @return -1 if no victor
+	 */
 	public int victor() {
 		int[] num_cont = new int[4];
 		
@@ -206,7 +274,12 @@ public class PonderLogic implements GameLogic<JButton> {
 		return -1;
 	}
 
-	// Attempt to spawn a player's piece at the given cell and return success
+	/**
+	 * Attempt to spawn the player's piece at the given cell
+	 * @param cell
+	 * @param player
+	 * @return success
+	 */
 	public boolean spawn(JButton cell, int player) {
 		if (canSpawn(positionOf(cell), player)) {
 			double cost = canSlide(cell, flags[player]) ? 0.5 : 1.0;
@@ -233,18 +306,33 @@ public class PonderLogic implements GameLogic<JButton> {
 		cell.setBackground(data.get(cell).color = color);
 	}
 
+	/**
+	 * Get the current selected spawn stack
+	 * @return
+	 */
 	public JPanel getStack() {
 		return stack;
 	}
 	
+	/**
+	 * Load up the given spawn stack
+	 * @param n_stack
+	 */
 	public void setStack(JPanel n_stack) {
 		stack = n_stack;
 	}
 
+	/**
+	 * @param cell
+	 * @return the list of flags on the given tile
+	 */
 	public boolean[] flagsOn(JButton cell) {
 		return data.get(cell).has_flag;
 	}
 	
+	/**
+	 * @return all flag tiles
+	 */
 	public JButton[] getFlags() {
 		return flags;
 	}
@@ -265,22 +353,42 @@ public class PonderLogic implements GameLogic<JButton> {
 		return (canSlide(from, to) && !data.get(from).has_moved) || jmpPiece(from, to) != null;
 	}
 	
+	/**
+	 * Prevent the player from spawning after moving
+	 */
 	public void enterMovePhase() {
 		in_move_phase = true;
 	}
 	
+	/**
+	 * @param player
+	 * @return whether the given player can spawn
+	 */
 	public boolean canPlayerSpawn(int player) {
 		return !in_move_phase && curr_player == player && mana > 0 && !spawn_sets[player].isEmpty() && spawn_sets[player].peek() <= 0;
 	}
 	
+	/**
+	 * Add a piece to the given player's spawn stack
+	 * @param player
+	 */
 	public void addToSpawn(int player) {
 		spawn_sets[player].add(1);
 	}
 
+	/**
+	 * Remove a piece from the given player's spawn stack
+	 * @param player
+	 */
 	public void popFromSpawn(int player) {
 		spawn_sets[player].poll();
 	}
 	
+	/**
+	 * @param piece
+	 * @param tile
+	 * @return whether the piece can move onto the given tile considering flag locations
+	 */
 	public boolean canCapFlag(JButton piece, JButton tile) {
 		switch (data.get(piece).num_flags) {
 			case 0:													// Piece has no flags
@@ -304,15 +412,25 @@ public class PonderLogic implements GameLogic<JButton> {
 		return data.get(cell).has_moved;
 	}
 	
+	/**
+	 * Select the given tile (for movement purposes)
+	 * @param cell
+	 */
 	public void select(JButton cell) {
 		focus = cell;
 	}
 	
+	/**
+	 * @return the currently selected tile
+	 */
 	public JButton getFocus() {
 		return focus;
 	}
 
-// Really temporary method (for testing purposes)
+	/**
+	 * Decrement the spawn delay for all pieces in the given player's spawn stack
+	 * @param player
+	 */
 	public void decStackDelay(int player) {
 		if (spawn_sets[player].isEmpty()) return;
 		
@@ -324,7 +442,31 @@ public class PonderLogic implements GameLogic<JButton> {
 		spawn_sets[player] = replacement;
 	}
 	
-	// temporary methods for compatability
+	/**
+	 * Determine whether the given piece is surrounded.
+	 * A piece is surrounded when there is no tile p, where canSlide(piece, p),
+	 * That does not have a piece controlled by an opponent on it
+	 * @param piece
+	 * @return
+	 */
+	public boolean isSurrounded(JButton piece) {
+		int owner = getPieceOwner(piece);
+		
+		if (owner != -1)
+			for (JButton adj : adjacents(positionOf(piece))[0])
+				if (adj != null) {
+					int __ = getPieceOwner(adj);
+					
+					if (__ == -1 || __ == owner) return false;
+				}
+		
+		return true;
+	}
+	
+	/**
+	 * @param cell
+	 * @return the owner of the piece at the given tile
+	 */
 	public int getPieceOwner(JButton cell) {
 		return cell != null ? data.get(cell).owner : -1;
 	}
@@ -333,10 +475,19 @@ public class PonderLogic implements GameLogic<JButton> {
 		return curr_player;
 	}
 	
+	/**
+	 * @param elem
+	 * @return whether the given tile is the current focus
+	 */
 	public boolean isClicked(JButton elem) {
 		return elem == focus;
 	}
 	
+	/**
+	 * Process context-sensitive input to the given tile
+	 * @param elem
+	 * @return
+	 */
 	public int click(JButton elem) {
 		if (stack != null) return 1;						// SPAWN_EVENT
 		if (focus == null && canMove(elem)) return 2;		// SELECT_EVENT
@@ -345,6 +496,9 @@ public class PonderLogic implements GameLogic<JButton> {
 		return 0;
 	}
 	
+	/** 
+	 * Update the logic member for the next turn
+	 */
 	public void nextTurn() {
 		mana = 1;
 		

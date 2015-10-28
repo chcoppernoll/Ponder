@@ -44,15 +44,14 @@ public class SwingGraphics {
 	 * Work on artwork
 	 * Add javadoc comments to all methods (they appear on hover)
 	 * Rework the PonderLogic API (it's getting slightly unruly)
-	 * Remember to implement the corner rule in the game loop
+	 * 	Improve PonderLogic implementation (especially spawn logic)
 	 */
 	
 	// TODO Game Logic
 	/*
-	 * Improve PonderLogic implementation
-	 * Especially the spawn logic (move away from remembering the specific stacks, if possible)
-	 * End turn (Needs game loop work)
-	 * Corner rule capture
+ 	 * End turn (Include Corner rule, Needs game loop work)
+ 	 * 	Can only move one piece a turn
+ 	 *  Remember to add in the corner rule in the game loop
 	 * No immediate backward jumps (This stuff needs events to work)
 	 * Undo moves
 	 */
@@ -90,6 +89,9 @@ public class SwingGraphics {
 		initialize();
 	}
 	
+	/**
+	 * Setup a new game state
+	 */
 	public void reset() {		
 		// Game Data Text
 		((JLabel)gameHeader.getComponent(0)).setText("Game Data Goes Here");
@@ -112,7 +114,8 @@ public class SwingGraphics {
 		move(cells[1][2], cells[1][1]);
 		move(cells[1][3], cells[1][2]);
 		move(cells[1][5], cells[1][4]);
-		
+
+		logic.init(cells);
 		logic.nextTurn();
 	}
 
@@ -133,7 +136,11 @@ public class SwingGraphics {
 		});
 	}
 	
-	// Highlight spawnable areas
+	/**
+	 * Highlight spawnable areas for a given player
+	 * @param player
+	 * @param color
+	 */
 	private void highlight(int player, Color color) {
 		for (JButton[] row : cells)
 			for (JButton cell : row)
@@ -141,32 +148,46 @@ public class SwingGraphics {
 					logic.setColor(cell, color);
 	}
 	
+	/**
+	 * Color the entire grid
+	 * @param bg
+	 */
 	private void color(Color bg) {
 		for (JButton[] row : cells)
 			for (JButton cell : row)
 				logic.setColor(cell, bg);
 	}
 
-	// Open/Close the settings window
+	/**
+	 * Open the settings window
+	 */
 	private void openSettings() {
 		grid.setVisible(false);
 		settings.setVisible(true);
 		inSettings = true;
 	}
 	
-	private void openGameList() {
-		grid.setVisible(false);
-		gameList.setVisible(true);
-		inGameList = true;
-	}
-	
-	// Open/Close the game list window
+	/**
+	 * Close the settings window
+	 */
 	private void closeSettings() {
 		grid.setVisible(true);
 		settings.setVisible(false);
 		inSettings = false;
 	}
 	
+	/**
+	 * Open the game browser
+	 */
+	private void openGameList() {
+		grid.setVisible(false);
+		gameList.setVisible(true);
+		inGameList = true;
+	}
+	
+	/**
+	 * Close the game browser
+	 */
 	private void closeGameList() {
 		grid.setVisible(true);
 		gameList.setVisible(false);
@@ -497,10 +518,12 @@ public class SwingGraphics {
 				grid.add(cells[y][x]);
 			}
 		}
-		
-		logic.init(cells);
 	}
 	
+	/**
+	 * Setup all pieces for the given player
+	 * @param player
+	 */
 	private void setUpPieces(int player) {
 		int x = player < 2 ? 1 : 7;
 		int y = player % 2 == 0 ? 1 : 7;
@@ -513,12 +536,20 @@ public class SwingGraphics {
 		newPiece(cells[y][x + 2 * dx], player);
 	}
 	
+	/**
+	 * Create a new piece at the given location
+	 * @param block
+	 * @param player
+	 */
 	private void newPiece(JButton block, int player) {
 		block.setText("");
 		block.setIcon(theme[player][0]);
 		logic.addPiece(block, player);
 	}
 	
+	/**
+	 * Setup all flags
+	 */
 	private void setUpFlags() {
 		newFlag(cells[1][1], 0);
 		newFlag(cells[7][1], 1);
@@ -526,6 +557,11 @@ public class SwingGraphics {
 		newFlag(cells[7][7], 3);
 	}
 	
+	/**
+	 * Create a new flag at the given location
+	 * @param block
+	 * @param player
+	 */
 	private void newFlag(JButton block, int player) {
 		block.setText("");
 		block.setIcon(theme[player][1]);
@@ -545,17 +581,28 @@ public class SwingGraphics {
 		theme = icons;
 	}
 	
-	// Get the given player's name tag
+	/**
+	 * Get the given player's nametag
+	 * 
+	 * @param player
+	 */
 	public JLabel getLabel(int player) {
 		return (JLabel)players[player].getComponents()[0];
 	}
 	
-	// Get the game header
+	/**
+	 * Get the game header
+	 * @return
+	 */
 	public JPanel getHeader() {
 		return gameHeader;
 	}
 	
-	// Get the set of flag icons for the given player
+	/**
+	 * Get the set of flag icons (the four computers) for the given player
+	 * @param player
+	 * @return
+	 */
 	public JLabel[] getFlagIcons(int player) {
 		JLabel[] ret = new JLabel[4];
 		
@@ -566,18 +613,26 @@ public class SwingGraphics {
 		return ret;
 	}
 	
-	// Get the spawn stack for the given player
+	/**
+	 * Get the spawn stack for a given player
+	 * @param player
+	 * @return
+	 */
 	public JPanel getStack(int player) {
 		return (JPanel)players[player].getComponents()[5];
 	}
 
-	// Get the PonderLogic object
+	/**
+	 * Get the game logic class
+	 * @return
+	 */
 	public PonderLogic getLogic() {
 		return logic;
 	}
 
 	/**
-	 * Move a "graphical piece" from one component to another
+	 * Move a piece from one component to another (move/exile/spawn)
+	 * Also performs necessary logic calls to update the game state
 	 * @param from The component where the piece is currently located
 	 * @param to The component the piece is being moved to
 	 */
@@ -637,12 +692,16 @@ public class SwingGraphics {
 		}
 	}
 
-	// Allows local input to be used
+	/**
+	 * Start accepting local input
+	 */
 	public void acceptInput() {
 		allow_local_input = true;
 	}
 	
-	// Stops local input from being used
+	/**
+	 * Stop accepting local input
+	 */
 	public void stopInput() {
 		allow_local_input = false;
 	}
