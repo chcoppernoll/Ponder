@@ -2,6 +2,7 @@ package game;
 
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -60,9 +61,9 @@ public class PonderLogic implements GameLogic<JButton> {
 	private HashMap<JButton, GridData> data = new HashMap<>();
 	private HashMap<Position, JButton> grid = new HashMap<>();		// If two objects have the same position only one is stored
 	
-	//private Queue<JButton> event_queue = null;
 	@SuppressWarnings("unchecked")
 	private PriorityQueue<Integer>[] spawn_sets = (PriorityQueue<Integer>[])new PriorityQueue[4];
+	private LinkedList<Event> curr_move = new LinkedList<>();
 	
 	/**
 	 * @param pos
@@ -264,9 +265,10 @@ public class PonderLogic implements GameLogic<JButton> {
 	public int victor() {
 		int[] num_cont = new int[4];
 		
-		for (JButton flag : flags)
+		for (JButton flag : flags) {
 			if (data.get(flag).owner != -1)
 				num_cont[data.get(flag).owner]++;
+		}
 		
 		for (int i = 0; i != num_cont.length; ++i)
 			if (num_cont[i] >= 3) return i;
@@ -343,7 +345,7 @@ public class PonderLogic implements GameLogic<JButton> {
 	 * Returns whether the selected piece is capable of moving
 	 */
 	public boolean canMove(JButton cell) {
-		return getPieceOwner(cell) != -1 && !data.get(cell).has_moved;
+		return getPieceOwner(cell) == curr_player && !data.get(cell).has_moved;
 	}
 	
 	/**
@@ -373,7 +375,7 @@ public class PonderLogic implements GameLogic<JButton> {
 	 * @param player
 	 */
 	public void addToSpawn(int player) {
-		spawn_sets[player].add(1);
+		spawn_sets[player].add(2);
 	}
 
 	/**
@@ -502,14 +504,22 @@ public class PonderLogic implements GameLogic<JButton> {
 	public void nextTurn() {
 		mana = 1;
 		
-		// Decrement the priority queue
-		
 		curr_player = (curr_player + 1) % 4;
+		decStackDelay(curr_player);
+		
 		in_move_phase = false;
+		curr_move.clear();
 		
 		for (JButton piece : grid.values())
 			if (piece != null)
 				data.get(piece).has_moved = false;
+	}
+	
+	public boolean turnOver() {
+		//player has pieces to move || player has pieces to spawn
+		return in_move_phase ? focus == null
+							 : spawn_sets[curr_player].size() < 4 ? false
+									 							  : !canPlayerSpawn(curr_player);
 	}
 
 }

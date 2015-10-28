@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 
+import game.Event;
 import game.PonderLogic;
 import java.util.Arrays;
 
@@ -49,18 +50,24 @@ public class SwingGraphics {
 	
 	// TODO Game Logic
 	/*
+	 * Restrict selections to only player pieces
  	 * End turn (Include Corner rule, Needs game loop work)
  	 * 	Can only move one piece a turn
- 	 *  Remember to add in the corner rule in the game loop
 	 * No immediate backward jumps (This stuff needs events to work)
 	 * Undo moves
 	 */
 	
+	// TODO Game Improvements
+	/*
+	 * Abstract the graphics and logic by having all communication done with events
+	 */
+
 	// Sprint 2
 	/*
-	 * Game Loop
 	 * Event classes
 	 * Polymorphic player classes
+	 * Game Loop
+	 * Rewrite SwingGraphics and PonderLogic
 	 * Complete local play
 	 * Basic server-client communication within the main game
 	 * Server/Database improvements
@@ -111,20 +118,6 @@ public class SwingGraphics {
 			setUpPieces(i);
 		
 		setUpFlags();
-		
-		move(cells[6][7], cells[6][6]);
-		move(cells[7][6], getStack(3));
-		move(cells[3][7], getStack(2));
-		move(cells[7][2], cells[7][1]);
-		move(cells[3][1], getStack(0));
-		logic.decStackDelay(0);
-		move(cells[2][1], getStack(0));
-		logic.decStackDelay(0);
-		move(cells[1][2], cells[1][1]);
-		move(cells[1][3], cells[1][2]);
-		move(cells[1][5], cells[1][4]);
-
-		logic.nextTurn();
 	}
 
 	/**
@@ -142,6 +135,10 @@ public class SwingGraphics {
 				}
 			}
 		});
+	}
+
+	public void setVisible(boolean vis) {
+		frame.setVisible(vis);
 	}
 	
 	/**
@@ -411,7 +408,7 @@ public class SwingGraphics {
 						for (int i = 0; i != flags.length; ++i)
 							out += (flags[i] ? i + 1 : "X") + (i != flags.length - 1 ? ", " : " ");
 						
-						mseLbl.setText(out + "]");
+						mseLbl.setText(out + "] " + logic.getCurrPlayer() + " " + logic.turnOver());
 						//mseLbl.setText(String.format("%s %s", logic.positionOf(cell), Arrays.toString(logic.has_flags(cell))));
 					}
 					
@@ -715,7 +712,11 @@ public class SwingGraphics {
 	}
 
 	// Placeholder for running non-local moves
-	public void runEvent() {
-		
+	public void runEvent(Event e) {
+		e.run();
+	}
+	
+	public void undoEvent(Event e) {
+		e.undo();
 	}
 }
