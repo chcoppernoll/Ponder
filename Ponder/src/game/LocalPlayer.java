@@ -1,5 +1,7 @@
 package game;
 
+import java.awt.Color;
+
 import gui.SwingGraphics;
 import network.Client;
 
@@ -11,6 +13,7 @@ public class LocalPlayer implements Player {
 
 	public void onTurnEnd(SwingGraphics graphics, Client net) {
 		graphics.stopInput();
+		graphics.color(Color.BLACK);
 		// have to send to client
 	}
 

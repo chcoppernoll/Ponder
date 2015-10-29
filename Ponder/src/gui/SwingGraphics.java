@@ -18,7 +18,6 @@ import javax.swing.SwingConstants;
 
 import game.Event;
 import game.PonderLogic;
-import java.util.Arrays;
 
 public class SwingGraphics {
 
@@ -43,34 +42,29 @@ public class SwingGraphics {
 	// TODO Grayson
 	/*
 	 * Work on artwork
-	 * Add javadoc comments to all methods (they appear on hover)
 	 * Rework the PonderLogic API (it's getting slightly unruly)
 	 * 	Improve PonderLogic implementation (especially spawn logic)
 	 */
 	
 	// TODO Game Logic
 	/*
-	 * Restrict selections to only player pieces
- 	 * End turn (Include Corner rule, Needs game loop work)
- 	 * 	Can only move one piece a turn
 	 * No immediate backward jumps (This stuff needs events to work)
 	 * Undo moves
+	 * Possible to spawn a piece and not be able to end turn (very rare)
 	 */
 	
 	// TODO Game Improvements
 	/*
-	 * Abstract the graphics and logic by having all communication done with events
+	 * Add a line showing move direction ???
+	 * Abstract the graphics and logic by having all communication done with events (?)
 	 */
 
 	// Sprint 2
 	/*
 	 * Event classes
-	 * Polymorphic player classes
-	 * Game Loop
-	 * Rewrite SwingGraphics and PonderLogic
-	 * Complete local play
 	 * Basic server-client communication within the main game
 	 * Server/Database improvements
+	 * Rewrite SwingGraphics and PonderLogic
 	 */
 
 	/**
@@ -120,23 +114,6 @@ public class SwingGraphics {
 		setUpFlags();
 	}
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					SwingGraphics window = new SwingGraphics(new PonderLogic());
-					window.reset();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
 	public void setVisible(boolean vis) {
 		frame.setVisible(vis);
 	}
@@ -157,7 +134,7 @@ public class SwingGraphics {
 	 * Color the entire grid
 	 * @param bg
 	 */
-	private void color(Color bg) {
+	public void color(Color bg) {
 		for (JButton[] row : cells)
 			for (JButton cell : row)
 				logic.setColor(cell, bg);
@@ -306,8 +283,6 @@ public class SwingGraphics {
 			public void mouseClicked(MouseEvent e) {
 				if (allow_local_input && logic.canPlayerSpawn(0)) {
 					System.out.println("Clicked P1");
-
-					// if (!logic.canSpawn(0)) return;
 					
 					boolean clicked = logic.getStack() == getStack(0);
 					logic.setStack(clicked ? null : getStack(0));
@@ -408,8 +383,7 @@ public class SwingGraphics {
 						for (int i = 0; i != flags.length; ++i)
 							out += (flags[i] ? i + 1 : "X") + (i != flags.length - 1 ? ", " : " ");
 						
-						mseLbl.setText(out + "] " + logic.getCurrPlayer() + " " + logic.turnOver());
-						//mseLbl.setText(String.format("%s %s", logic.positionOf(cell), Arrays.toString(logic.has_flags(cell))));
+						mseLbl.setText(out + "] P" + (logic.getCurrPlayer() + 1));// + " " + logic.turnOver());
 					}
 					
 					public void mouseEntered(MouseEvent e) {
@@ -433,9 +407,7 @@ public class SwingGraphics {
 							case MouseEvent.BUTTON1:			// LEFT-CLICK
 								// Select contextual operations
 								switch (logic.click(src)) {
-									case 1:				// logic.SPAWN_EVENT
-										// Chosen if a stack was not previously selected (logic.stack != null)
-
+									case PonderLogic.SPAWN_CLICK:
 										if (logic.spawn(src, logic.getCurrPlayer())) {
 											move(logic.getStack(), src);				// Spawn the piece
 											logic.setStack(null);
@@ -443,53 +415,44 @@ public class SwingGraphics {
 										}
 										
 										break;
-									case 2:				// logic.SELECT_EVENT
-										// Chosen if the element can be moved (logic.focus == null && canMove(elem))
-										
+									case PonderLogic.SELECT_CLICK:										
 										System.out.println("Select Piece");
 										
 										logic.select(src);
 										logic.setColor(src, Color.BLUE);
 										
 										break;
-									case 3:			// logic.MOVE_EVENT (BUILD_MOVE_EVENT ?)
-										// Chosen if an element was previously selected (logic.focus != null && logic.focus != elem)
+									case PonderLogic.MOVE_CLICK:
+										JButton from = logic.getFocus();
 										
-										// End movement -> piece goes out of focus
-										
-										// Being able to jump backwards will be handled by checking the move queue
-										JButton from = logic.getFocus(), next = null;
-										
-										if (logic.getPieceOwner(src) != -1) return;								// Can't move to a tile where a piece exists
+										if (logic.getPieceOwner(src) != -1) return;									// Can't move to a tile where a piece exists
 										
 										if (logic.canSlide(from, src)) {
-											if (logic.hasMoved(from)) return;										// Movement ended
-											if (!logic.canCapFlag(from, src)) return;
+											if (logic.hasMoved(from) || !logic.canCapFlag(from, src)) return;		// Movement ended
 											
 										} else {
 											JButton jmpd = logic.jmpPiece(from, src);
 											
 											// If jumping a piece (doesn't care about hasMoved since you can't select a piece that has moved)
-												// Need to add a check against jumping back
-											//if (jmpd != null && !logic.illegal(from, to)) {
-											// or have logic.jmpPiece return null on an illegal jump
+											// Add in checks agains
+												// Jumping backwards
+												// Jumping after a slide
 											if (jmpd != null) {// && to != logic.getLastJump().from) {
 												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from))			// Despawn the piece
 													move(jmpd, getStack(logic.getPieceOwner(jmpd)));
 												
-												//next = logic.canMove(src) ? src : null;
-												next = src;
 											} else
 												return;																// Movement ended
 
 										}
 
 										System.out.println("Moving");
-										logic.enterMovePhase();						// Prevent spawning actions
-										//logic.addMove(src);							// Add a move to the event feed
+										logic.enterMovePhase();						// Prevent spawning actions from occurring
+										//logic.addMove(src);						// Add a move to the event feed (performed in move ???)
 										move(from, src);							// Perform the move
-										
-										logic.select(next);							// Select the new tile (or null if no more movement)
+
+										logic.setColor(src, Color.GREEN);
+										logic.select(src);							// Select the new tile (or null if no more movement)
 										updateMouseText(src);						// Update text
 										
 										break;

@@ -1,6 +1,9 @@
 package game;
 
+import java.awt.Color;
 import java.awt.EventQueue;
+
+import javax.swing.JButton;
 
 import gui.SwingGraphics;
 import network.Client;
@@ -36,26 +39,28 @@ public class Ponder {
 			// wait for end turn (allow switching games)
 			// Test Corner Rule
 			// player.onTurnEnd();
-		
+
 		window.reset();
+		
 		while (logic.victor() == -1) {
 			logic.nextTurn();
 			
 			Player curr = players[logic.getCurrPlayer()];
 			curr.onTurnStart(window, net);
 			
-			// curr.turnOver is re
+			// wait for the player to finish their turn
 			while (!curr.turnOver(window, net)) {
+				// Have some network communication ???
 				boolean tmp = curr.turnOver(window, net);
 				System.out.print(tmp ? "" : "");						// The program never exits this loop without this statement
 			}
 			// wait for end turn
 			
-			//if (curr instanceof LocalPlayer)
-				//for (JButton piece : logic.getSurrounded()) {
+			if (curr instanceof LocalPlayer)
+				for (JButton piece : logic.getSurrounded()) {
 					//logic.addEvent(new SpawnEvent(logic.positionOf(piece), logic.getPieceOwner(piece), true))
-					//window.move(piece, window.getStack(logic.getPieceOwner(piece)));
-				//}
+					window.move(piece, window.getStack(logic.getPieceOwner(piece)));
+				}
 
 			curr.onTurnEnd(window, net);
 		}

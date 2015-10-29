@@ -1,10 +1,11 @@
 package game;
 
 import java.awt.Color;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -27,7 +28,7 @@ class Position {
 	public Position add(int dx, int dy) {
 		return new Position(x + dx, y + dy);
 	}
-	
+
 	public double distance(Position a) {
 		int dx = x - a.x, dy = y - a.y;
 		
@@ -129,7 +130,7 @@ public class PonderLogic implements GameLogic<JButton> {
 			if (adj != null) {
 				int cell_piece = data.get(adj).owner;
 				boolean[] _flags = data.get(adj).has_flag;
-	
+
 				if (cell_piece == -1 ? (_flags[0] || _flags[1] || _flags[2] || _flags[3]) : cell_piece != player) return false;
 			}
 		}
@@ -222,7 +223,6 @@ public class PonderLogic implements GameLogic<JButton> {
 	public void addPiece(JButton a, int player) {
 		data.get(a).owner = player;
 		data.get(a).has_moved = true;
-		grid.put(positionOf(a), a);
 	}
 	
 	/**
@@ -232,7 +232,6 @@ public class PonderLogic implements GameLogic<JButton> {
 	 */
 	public void removePiece(JButton a) {
 		addPiece(a, -1);
-		grid.put(positionOf(a), null);
 	}
 	
 	/**
@@ -283,6 +282,7 @@ public class PonderLogic implements GameLogic<JButton> {
 	 * @return success
 	 */
 	public boolean spawn(JButton cell, int player) {
+		System.out.println("Spawning");
 		if (canSpawn(positionOf(cell), player)) {
 			double cost = canSlide(cell, flags[player]) ? 0.5 : 1.0;
 			
@@ -454,15 +454,29 @@ public class PonderLogic implements GameLogic<JButton> {
 	public boolean isSurrounded(JButton piece) {
 		int owner = getPieceOwner(piece);
 		
-		if (owner != -1)
-			for (JButton adj : adjacents(positionOf(piece))[0])
-				if (adj != null) {
-					int __ = getPieceOwner(adj);
-					
-					if (__ == -1 || __ == owner) return false;
-				}
+		if (owner == -1) return false;
+		
+		for (JButton adj : adjacents(positionOf(piece))[0])
+			if (adj != null) {
+				int __ = getPieceOwner(adj);
+				
+				if (__ == -1 || __ == owner) return false;
+			}
 		
 		return true;
+	}
+	
+	/**
+	 * @return the list of all pieces that are currently surrounded
+	 */
+	public List<JButton> getSurrounded() {
+		List<JButton> ret = new LinkedList<>();
+		
+		for (JButton piece : grid.values())
+			if (piece != null && isSurrounded(piece))
+				ret.add(piece);
+		
+		return ret;
 	}
 	
 	/**
@@ -491,9 +505,9 @@ public class PonderLogic implements GameLogic<JButton> {
 	 * @return
 	 */
 	public int click(JButton elem) {
-		if (stack != null) return 1;						// SPAWN_EVENT
-		if (focus == null && canMove(elem)) return 2;		// SELECT_EVENT
-		if (focus != null && focus != elem) return 3;		// MOVE_EVENT
+		if (stack != null) return SPAWN_CLICK;
+		if (focus == null && canMove(elem)) return SELECT_CLICK;
+		if (focus != null && focus != elem) return MOVE_CLICK;
 		
 		return 0;
 	}
@@ -522,4 +536,5 @@ public class PonderLogic implements GameLogic<JButton> {
 									 							  : !canPlayerSpawn(curr_player);
 	}
 
+	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
 }
