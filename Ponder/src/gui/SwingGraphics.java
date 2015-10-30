@@ -1,33 +1,24 @@
 package gui;
 
 import java.awt.EventQueue;
-
-import javax.swing.JFrame;
 import java.awt.GridLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JTextPane;
-
-import game.GameLogic;
-import game.GraphicsLogic;
-
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
-
-import javax.swing.JLabel;
-import javax.swing.ImageIcon;
 import java.awt.FlowLayout;
 
-import javax.swing.AbstractButton;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
+import javax.swing.JFrame;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 
-// Move setup to SwingGraphicsRaw?
+import game.Event;
+import game.PonderLogic;
+
 public class SwingGraphics {
 
 	private JFrame frame = new JFrame();
@@ -35,11 +26,11 @@ public class SwingGraphics {
 	private ImageIcon[][] theme = new ImageIcon[4][2];			// Current theme set
 	private JPanel gameHeader = new JPanel();					// Game header
 	private JButton[][] cells = new JButton[9][9];				// Tiles
-	private JLabel mseLbl = new JLabel();
+	private JLabel mseLbl = new JLabel();						// Mouse Label
 	
-	private GraphicsLogic logic;
+	private PonderLogic logic;
 	
-	private boolean inSettings = false, inGameList = false;
+	private boolean inSettings = false, inGameList = false, allow_local_input = true;
 	private JPanel settings = new JPanel(), gameList = new JPanel(), grid = new JPanel();		// grid??
 	
 	// TODO Alex
@@ -50,19 +41,36 @@ public class SwingGraphics {
 	
 	// TODO Grayson
 	/*
-	 * Start working on game logic and integration with the graphics
 	 * Work on artwork
+	 * Rework the PonderLogic API (it's getting slightly unruly)
+	 * 	Improve PonderLogic implementation (especially spawn logic)
 	 */
 	
-	// TODO Add in logic hooks for graphics (once we start implementing game logic)
+	// TODO Game Logic
+	/*
+	 * No immediate backward jumps (This stuff needs events to work)
+	 * Undo moves
+	 * Possible to spawn a piece and not be able to end turn (very rare)
+	 */
 	
-	// PROBLEM
-	// How to represent Flags and pieces on the same tile
+	// TODO Game Improvements
+	/*
+	 * Add a line showing move direction ???
+	 * Abstract the graphics and logic by having all communication done with events (?)
+	 */
+
+	// Sprint 2
+	/*
+	 * Event classes
+	 * Basic server-client communication within the main game
+	 * Server/Database improvements
+	 * Rewrite SwingGraphics and PonderLogic
+	 */
 
 	/**
 	 * Create the application.
 	 */
-	public SwingGraphics(GraphicsLogic instance) {
+	public SwingGraphics(PonderLogic instance) {
 		logic = instance;
 		
 		ImageIcon piece = new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
@@ -89,93 +97,79 @@ public class SwingGraphics {
 		initialize();
 	}
 	
+	/**
+	 * Setup a new game state
+	 */
 	public void reset() {		
+		logic.init(cells);
+		
 		// Game Data Text
 		((JLabel)gameHeader.getComponent(0)).setText("Game Data Goes Here");
 		
-		// Testing piece display
+		// Delete old pieces ?
+		
 		for (int i = 0; i != players.length; ++i)
 			setUpPieces(i);
 		
 		setUpFlags();
-		
-		move(cells[6][7], cells[6][6]);
-		move(cells[7][6], getStack(3));
-		move(cells[3][7], getStack(2));
-		move(cells[7][2], cells[7][1]);
-		move(cells[6][1], getStack(1));
+	}
+
+	public void setVisible(boolean vis) {
+		frame.setVisible(vis);
+	}
+	
+	/**
+	 * Highlight spawnable areas for a given player
+	 * @param player
+	 * @param color
+	 */
+	private void highlight(int player, Color color) {
+		for (JButton[] row : cells)
+			for (JButton cell : row)
+				if (logic.canSpawn(cell, player))
+					logic.setColor(cell, color);
+	}
+	
+	/**
+	 * Color the entire grid
+	 * @param bg
+	 */
+	public void color(Color bg) {
+		for (JButton[] row : cells)
+			for (JButton cell : row)
+				logic.setColor(cell, bg);
 	}
 
 	/**
-	 * Launch the application.
+	 * Open the settings window
 	 */
-	public static void main(String[] args) {
-		GraphicsLogic logic = new GraphicsLogic();
-		
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					SwingGraphics window = new SwingGraphics(logic);
-					window.reset();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-	
-	// Highlight spawnable areas
-		// Doesn't handle dual spawning
-	private void highlight(int player) {
-		//for (JButton[] row : cells)
-			//for (JButton cell : row)
-				//if (logic.canSpawn(cell, player))
-					//cell.setBackground(Color.WHITE);
-		
-		if (logic.getMana() == 0.5) {
-			
-			
-			return;
-		}
-		
-		for (int y = 0; y != cells.length; ++y)
-			for (int x = 0; x != cells.length; ++x)
-				if (cells[y][x].getIcon() == null && logic.canSpawn(getAdjacent(x, y)[0], player))
-					cells[y][x].setBackground(Color.WHITE);
-
-	}
-
-	// Tests if p is outside of the grid range
-	private boolean outOfRange(int p) {
-		return p < 0 || p > 8;
-	}
-	
-	// Tests if (x, y) is an invalid grid position
-	private boolean invalidPoint(int x, int y) {
-		return outOfRange(x) || outOfRange(y);
-	}
-
-	// Open/Close the settings window
 	private void openSettings() {
 		grid.setVisible(false);
 		settings.setVisible(true);
 		inSettings = true;
 	}
 	
-	private void openGameList() {
-		grid.setVisible(false);
-		gameList.setVisible(true);
-		inGameList = true;
-	}
-	
-	// Open/Close the game list window
+	/**
+	 * Close the settings window
+	 */
 	private void closeSettings() {
 		grid.setVisible(true);
 		settings.setVisible(false);
 		inSettings = false;
 	}
 	
+	/**
+	 * Open the game browser
+	 */
+	private void openGameList() {
+		grid.setVisible(false);
+		gameList.setVisible(true);
+		inGameList = true;
+	}
+	
+	/**
+	 * Close the game browser
+	 */
 	private void closeGameList() {
 		grid.setVisible(true);
 		gameList.setVisible(false);
@@ -287,34 +281,45 @@ public class SwingGraphics {
 		SwingGraphics self = this;
 		panel_1.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (panel_1.getComponents().length != 0) {
+				if (allow_local_input && logic.canPlayerSpawn(0)) {
 					System.out.println("Clicked P1");
-					self.highlight(0);
+					
+					boolean clicked = logic.getStack() == getStack(0);
+					logic.setStack(clicked ? null : getStack(0));
+					self.highlight(0, clicked ? Color.BLACK : Color.WHITE);
 				}
 			}
 		});
 		panel_2.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (panel_2.getComponents().length != 0) {
+				if (allow_local_input && logic.canPlayerSpawn(1)) {
 					System.out.println("Clicked P2");
-					self.highlight(1);
+
+					boolean clicked = logic.getStack() == getStack(1);
+					logic.setStack(clicked ? null : getStack(1));
+					self.highlight(1, clicked ? Color.BLACK : Color.WHITE);
 				}
 			}
 		});
 		panel_3.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (panel_3.getComponents().length != 0) {
+				if (allow_local_input && logic.canPlayerSpawn(2)) {
 					System.out.println("Clicked P3");
-					self.highlight(2);
+
+					boolean clicked = logic.getStack() == getStack(2);
+					logic.setStack(clicked ? null : getStack(2));
+					self.highlight(2, clicked ? Color.BLACK : Color.WHITE);
 				}
 			}
 		});
 		panel_4.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (panel_4.getComponents().length != 0) {
-					// add in some call to GraphicsLogic
+				if (allow_local_input && logic.canPlayerSpawn(3)) {
 					System.out.println("Clicked P4");
-					self.highlight(3);
+					
+					boolean clicked = logic.getStack() == getStack(3);
+					logic.setStack(clicked ? null : getStack(3));
+					self.highlight(3, clicked ? Color.BLACK : Color.WHITE);
 				}
 			}
 		});
@@ -328,6 +333,7 @@ public class SwingGraphics {
 		JLabel txtpnGameDataGoes = new JLabel();
 		txtpnGameDataGoes.setBounds(149, 31, 209, 20);
 		gameHeader.add(txtpnGameDataGoes);
+		
 		
 		// Settings window
 		settings.setVisible(false);;
@@ -351,10 +357,12 @@ public class SwingGraphics {
 		gameList.setBackground(Color.WHITE);
 		gameList.setLayout(new GridLayout(9, 9, 1, 1));
 
-		
+
+		// Mouse Labeling
 		mseLbl.setHorizontalAlignment(SwingConstants.CENTER);
 		mseLbl.setBounds(313, 590, 175, 14);
 		frame.getContentPane().add(mseLbl);
+		
 		
 		// Game Grid
 		grid.setBackground(Color.BLACK);
@@ -368,42 +376,105 @@ public class SwingGraphics {
 				cells[y][x].setBackground(Color.BLACK);
 				
 				cells[y][x].addMouseListener(new MouseAdapter() {
+					private void updateMouseText(JButton cell) {
+						String out = logic.positionOf(cell) + " [ ";
+						
+						boolean[] flags = logic.flagsOn(cell);
+						for (int i = 0; i != flags.length; ++i)
+							out += (flags[i] ? i + 1 : "X") + (i != flags.length - 1 ? ", " : " ");
+						
+						mseLbl.setText(out + "] P" + (logic.getCurrPlayer() + 1));// + " " + logic.turnOver());
+					}
+					
 					public void mouseEntered(MouseEvent e) {
 						JButton src = (JButton)e.getSource();
 						
-						//mseLbl.setText(String.format("%s %s", logic.positionOf(src), Arrays.toString(logic.getFlags(src))));
-						mseLbl.setText(String.format("(%d, %d) %s", src.getX() / 55, src.getY() / 55, Arrays.toString(logic.getFlags(src))));
-						
+						updateMouseText(src);
 						src.setBackground(Color.CYAN);
 					}
 					
 					public void mouseExited(MouseEvent e) {
 						JButton src = (JButton)e.getSource();
-						src.setBackground(logic.isClicked(src) ? Color.GREEN : Color.BLACK);
+						src.setBackground(logic.getColor(src));
 					}
 					
 					public void mouseClicked(MouseEvent e) {
+						if (!allow_local_input) return;
+						
 						JButton src = (JButton)e.getSource();
 						
-						//System.out.println(logic.getPiece(src) + ": " + Arrays.toString(logic.getFlags(src)));
-						
 						switch (e.getButton()) {
-							case MouseEvent.BUTTON1:
-								logic.click(src);
-								src.setBackground(logic.isClicked(src) ? Color.GREEN : Color.CYAN);
+							case MouseEvent.BUTTON1:			// LEFT-CLICK
+								// Select contextual operations
+								switch (logic.click(src)) {
+									case PonderLogic.SPAWN_CLICK:
+										if (logic.spawn(src, logic.getCurrPlayer())) {
+											move(logic.getStack(), src);				// Spawn the piece
+											logic.setStack(null);
+											self.color(Color.BLACK);					// Remove the spawn highlighting
+										}
+										
+										break;
+									case PonderLogic.SELECT_CLICK:										
+										System.out.println("Select Piece");
+										
+										logic.select(src);
+										logic.setColor(src, Color.BLUE);
+										
+										break;
+									case PonderLogic.MOVE_CLICK:
+										JButton from = logic.getFocus();
+										
+										if (logic.getPieceOwner(src) != -1) return;									// Can't move to a tile where a piece exists
+										
+										if (logic.canSlide(from, src)) {
+											if (logic.hasMoved(from) || !logic.canCapFlag(from, src)) return;		// Movement ended
+											
+										} else {
+											JButton jmpd = logic.jmpPiece(from, src);
+											
+											// If jumping a piece (doesn't care about hasMoved since you can't select a piece that has moved)
+											// Add in checks agains
+												// Jumping backwards
+												// Jumping after a slide
+											if (jmpd != null) {// && to != logic.getLastJump().from) {
+												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from))			// Despawn the piece
+													move(jmpd, getStack(logic.getPieceOwner(jmpd)));
+												
+											} else
+												return;																// Movement ended
+
+										}
+
+										System.out.println("Moving");
+										logic.enterMovePhase();						// Prevent spawning actions from occurring
+										//logic.addMove(src);						// Add a move to the event feed (performed in move ???)
+										move(from, src);							// Perform the move
+
+										logic.setColor(src, Color.GREEN);
+										logic.select(src);							// Select the new tile (or null if no more movement)
+										updateMouseText(src);						// Update text
+										
+										break;
+									default:
+										System.out.println("Defocusing");
+										logic.setColor(src, logic.getColor(src) == Color.BLACK ? Color.GREEN : Color.BLACK);
+										logic.select(null);
+								}
 								
 								break;
-							case MouseEvent.BUTTON3:
-								JButton[][] adj = getAdjacent(src.getX() / 55, src.getY() / 55);
-								
-								//System.out.println(Arrays.toString(adj[0]));
+							case MouseEvent.BUTTON2:			// MIDDLE-CLICK
+								JButton[][] adj = logic.adjacents(logic.positionOf(src));
 								
 								for (JButton imm : adj[0])
 									if (imm != null) imm.setBackground(Color.YELLOW);
 								
 								for (JButton nimm : adj[1])
 									if (nimm != null) nimm.setBackground(Color.MAGENTA);
+
+								break;
 								
+							case MouseEvent.BUTTON3:			// RIGHT-CLICK
 								break;
 								
 							default:
@@ -413,12 +484,14 @@ public class SwingGraphics {
 				});
 				
 				grid.add(cells[y][x]);
-				logic.add(cells[y][x], y, x);
 			}
 		}
-		
 	}
 	
+	/**
+	 * Setup all pieces for the given player
+	 * @param player
+	 */
 	private void setUpPieces(int player) {
 		int x = player < 2 ? 1 : 7;
 		int y = player % 2 == 0 ? 1 : 7;
@@ -431,19 +504,32 @@ public class SwingGraphics {
 		newPiece(cells[y][x + 2 * dx], player);
 	}
 	
+	/**
+	 * Create a new piece at the given location
+	 * @param block
+	 * @param player
+	 */
 	private void newPiece(JButton block, int player) {
 		block.setText("");
 		block.setIcon(theme[player][0]);
 		logic.addPiece(block, player);
 	}
 	
+	/**
+	 * Setup all flags
+	 */
 	private void setUpFlags() {
 		newFlag(cells[1][1], 0);
-		newFlag(cells[1][7], 1);
-		newFlag(cells[7][1], 2);
+		newFlag(cells[7][1], 1);
+		newFlag(cells[1][7], 2);
 		newFlag(cells[7][7], 3);
 	}
 	
+	/**
+	 * Create a new flag at the given location
+	 * @param block
+	 * @param player
+	 */
 	private void newFlag(JButton block, int player) {
 		block.setText("");
 		block.setIcon(theme[player][1]);
@@ -463,17 +549,28 @@ public class SwingGraphics {
 		theme = icons;
 	}
 	
-	// Get the given player's name tag
+	/**
+	 * Get the given player's nametag
+	 * 
+	 * @param player
+	 */
 	public JLabel getLabel(int player) {
 		return (JLabel)players[player].getComponents()[0];
 	}
 	
-	// Get the game header
+	/**
+	 * Get the game header
+	 * @return
+	 */
 	public JPanel getHeader() {
 		return gameHeader;
 	}
 	
-	// Get the set of flag icons for the given player
+	/**
+	 * Get the set of flag icons (the four computers) for the given player
+	 * @param player
+	 * @return
+	 */
 	public JLabel[] getFlagIcons(int player) {
 		JLabel[] ret = new JLabel[4];
 		
@@ -484,90 +581,26 @@ public class SwingGraphics {
 		return ret;
 	}
 	
-	// Get the spawn stack for the given player
+	/**
+	 * Get the spawn stack for a given player
+	 * @param player
+	 * @return
+	 */
 	public JPanel getStack(int player) {
 		return (JPanel)players[player].getComponents()[5];
 	}
 
-	// Get the GraphicsLogic object
-	public GraphicsLogic getLogic() {
+	/**
+	 * Get the game logic class
+	 * @return
+	 */
+	public PonderLogic getLogic() {
 		return logic;
 	}
-	
-	/**
-	 * @param x
-	 * @param y
-	 * @return The tile at the given grid position
-	 */
-	public JButton getCell(int x, int y) {
-		return !invalidPoint(x, y) ? cells[y][x] : null;
-	}
 
 	/**
-	 * Get all adjacent tiles of the given grid position
-	 * @param x
-	 * @param y
-	 * @return A 2d array filed by the following rules
-	 * The first column is for slide adjacent tiles
-	 * The second column is for jump adjacent tiles
-	 * 
-	 * The indices of the columns correspond to this chart
-	 * 0 3 5 		So the tile at index 0 corresponds to the 
-	 * 1 X 6		Tile to the NW of the current position
-	 * 2 4 7
-	 */
-	public JButton[][] getAdjacent(int x, int y) {
-		if (invalidPoint(x, y)) return null;
-		
-		JButton[][] ret = new JButton[2][8];
-		int count = 0;
-		
-		for (int dx = -1; dx != 2; ++dx) {
-			for (int dy = -1; dy != 2; ++dy) {
-				if (!(dy == 0 && dx == 0)) {
-					ret[0][count] = getCell(x + dx, y + dy);
-					ret[1][count++] = getCell(x + 2 * dx, y + 2 * dy);
-				}
-			}
-		}
-		
-		return ret;
-	}
-
-	// Whether tile b can be reached from tile a
-	public boolean canReach(JButton a, JButton b) {
-		return canSlide(a, b) || canJump(a, b);
-	}
-
-	/**
-	 * @param a
-	 * @param b
-	 * @return Whether tile b can be reached by sliding from tile a
-	 */
-	public boolean canSlide(JButton a, JButton b) {
-		int x0 = a.getX() / 55, x1 = b.getX() / 55;
-		int y0 = a.getY() / 55, y1 = b.getY() / 55;
-		int dx = Math.abs(x0 - x1), dy = Math.abs(y0 - y1);
-		
-		return dx == 1 || dy == 1;
-	}
-	
-	/**
-	 * @param a
-	 * @param b
-	 * @return Whether tile b can be reached by jumping from tile a
-	 */
-	public boolean canJump(JButton a, JButton b) {
-		int x0 = a.getX() / 55, x1 = b.getX() / 55;
-		int y0 = a.getY() / 55, y1 = b.getY() / 55;
-		int dx = Math.abs(x0 - x1), dy = Math.abs(y0 - y1);
-		
-		return dx == 2 || dy == 2;
-	}
-	
-	// Will need to add in hooks once we start implementing game logic
-	/**
-	 * Move a "graphical piece" from one component to another
+	 * Move a piece from one component to another (move/exile/spawn)
+	 * Also performs necessary logic calls to update the game state
 	 * @param from The component where the piece is currently located
 	 * @param to The component the piece is being moved to
 	 */
@@ -579,17 +612,33 @@ public class SwingGraphics {
 			if (to instanceof JButton) {
 				JButton t = (JButton)to;
 				
+				t.setText(null);
 				t.setIcon(f.getIcon());
-				t.setText("");
 				f.setIcon(null);
-				logic.addPiece(t, logic.getPiece(f));			// logic.getCurrPlayer() should also work
-				// move flags
+
+				boolean[] flags = logic.flagsOn(f);
+				logic.addPiece(t, logic.getPieceOwner(f));			// logic.getCurrPlayer() should also work
+				for (int i = 0; i != flags.length; ++i) {			// Currently doesn't allow for dropable flags
+					if (flags[i]) {
+						logic.removeFlag(f, i);
+						logic.addFlag(t, i);
+					}
+				}
 				
 			// Move from cell to spawn stack
 			} else if (to instanceof JPanel) {
-				JLabel spawn = new JLabel(f.getIcon());
-				((JPanel)to).add(spawn);
+				if (to != getStack(logic.getPieceOwner(f))) throw new ArrayIndexOutOfBoundsException();
+				
+				logic.addToSpawn(logic.getPieceOwner(f));
+				((JPanel)to).add(new JLabel(f.getIcon()));
 				f.setIcon(null);
+				
+				// re-add flag icons
+				JButton[] flags = logic.getFlags();
+				for (int i = 0; i != flags.length; ++i) {
+					if (f == flags[i])
+						f.setIcon(theme[i][1]);
+				}
 			}
 			
 			logic.removePiece(f);
@@ -598,10 +647,39 @@ public class SwingGraphics {
 		} else if (from instanceof JPanel) {
 			JButton t = (JButton)to;
 			
+			t.setText(null);
+			
 			// get the icon to switch on
-			t.setIcon(((JButton)from.getComponent(0)).getIcon());
-			logic.addPiece(t, logic.getCurrPlayer());
+			t.setIcon(((JLabel)from.getComponent(0)).getIcon());
+			logic.addPiece(t, logic.getCurrPlayer());					// Relies on current player (Subject to abuse depending on how stack selection works)
+			logic.popFromSpawn(logic.getCurrPlayer());
+			
 			from.remove(0);
+			from.revalidate();
+			from.repaint();
 		}
+	}
+
+	/**
+	 * Start accepting local input
+	 */
+	public void acceptInput() {
+		allow_local_input = true;
+	}
+	
+	/**
+	 * Stop accepting local input
+	 */
+	public void stopInput() {
+		allow_local_input = false;
+	}
+
+	// Placeholder for running non-local moves
+	public void runEvent(Event e) {
+		e.run();
+	}
+	
+	public void undoEvent(Event e) {
+		e.undo();
 	}
 }
