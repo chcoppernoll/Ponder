@@ -535,6 +535,44 @@ public class PonderLogic implements GameLogic<JButton> {
 							 : spawn_sets[curr_player].size() < 4 ? false
 									 							  : !canPlayerSpawn(curr_player);
 	}
-
+	
+	/**
+	 * Determines if the proposed jump reverses the previous move
+	 * @return True if the jump would reverse the previous move, false otherwise
+	 */
+	public boolean isBackJump(JButton start, JButton end) {
+		Position lastStart;
+		
+		//Find the last move event
+		Event lastEvent = curr_move.getLast();
+		if(!(lastEvent instanceof MoveEvent))
+			return false;
+		
+		lastStart = ((MoveEvent)lastEvent).from;		
+		return positionOf(end).equals(lastStart);
+	}
+	
+	/**
+	 * Determines if the last move was a slide
+	 * @return True if the last move was a slide, false otherwise
+	 */
+	public boolean isSlide() {
+		if(curr_move.isEmpty()) {
+			return false;
+		}
+		
+		Event lastEvent = curr_move.getLast();
+		if(curr_move.getLast() instanceof MoveEvent) {
+			return ((MoveEvent) lastEvent).slide;
+		} else {
+			return false;
+		}
+	}
+	
+	public List<Event> addEvent (Event e) {
+		curr_move.addLast(e);
+		return curr_move;
+	}
+	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
 }
