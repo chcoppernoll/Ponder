@@ -1,7 +1,6 @@
 package game;
 
 import java.awt.Color;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -206,6 +205,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		
 		for (int y = 0; y != board.length; ++y) {
 			for (int x = 0; x != board[y].length; ++x) {
+				board[y][x].setIcon(null);
 				data.put(board[y][x], new GridData());
 				grid.put(new Position(x, y), board[y][x]);
 			}
@@ -537,22 +537,6 @@ public class PonderLogic implements GameLogic<JButton> {
 	}
 	
 	/**
-	 * Determines if the proposed jump reverses the previous move
-	 * @return True if the jump would reverse the previous move, false otherwise
-	 */
-	public boolean isBackJump(JButton start, JButton end) {
-		Position lastStart;
-		
-		//Find the last move event
-		Event lastEvent = curr_move.getLast();
-		if(!(lastEvent instanceof MoveEvent))
-			return false;
-		
-		lastStart = ((MoveEvent)lastEvent).from;		
-		return positionOf(end).equals(lastStart);
-	}
-	
-	/**
 	 * Determines if the last move was a slide
 	 * @return True if the last move was a slide, false otherwise
 	 */
@@ -563,7 +547,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		
 		Event lastEvent = curr_move.getLast();
 		if(curr_move.getLast() instanceof MoveEvent) {
-			return ((MoveEvent) lastEvent).slide;
+			return ((MoveEvent) lastEvent).isSlide;
 		} else {
 			return false;
 		}
@@ -576,6 +560,15 @@ public class PonderLogic implements GameLogic<JButton> {
 	
 	public void clearEvents() {
 		curr_move.clear();
+	}
+
+	/**
+	 * Check if the given move is a back jump
+	 */
+	public boolean isBackJmp(JButton start, JButton end) {
+		Event lastEvent = curr_move.getLast();
+		
+		return (lastEvent instanceof MoveEvent) && positionOf(end).equals(((MoveEvent)lastEvent).from);
 	}
 	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
