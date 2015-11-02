@@ -574,5 +574,9 @@ public class PonderLogic implements GameLogic<JButton> {
 		return curr_move;
 	}
 	
+	public void clearEvents() {
+		curr_move.clear();
+	}
+	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
 }

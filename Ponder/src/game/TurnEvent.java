@@ -1,9 +1,9 @@
 package game;
 
-public class EndTurnEvent implements Event {
+public class TurnEvent implements Event {
 	public final int player;
 	
-	public EndTurnEvent(int player) {
+	public TurnEvent(int player) {
 		this.player = player;
 	}
 	

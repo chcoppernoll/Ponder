@@ -33,12 +33,6 @@ public class SwingGraphics {
 	private boolean inSettings = false, inGameList = false, allow_local_input = true;
 	private JPanel settings = new JPanel(), gameList = new JPanel(), grid = new JPanel();		// grid??
 	
-	// TODO Alex
-	/*
-	 * Get Spawn Area to stack from the bottom for players 2 and 3
-	 * Set up a JAR build system for the artwork
-	 */
-	
 	// TODO Grayson
 	/*
 	 * Work on artwork
@@ -48,6 +42,7 @@ public class SwingGraphics {
 	
 	// TODO Game Logic
 	/*
+	 * Prevent jumping after sliding
 	 * No immediate backward jumps (This stuff needs events to work)
 	 * Undo moves
 	 * Possible to spawn a piece and not be able to end turn (very rare)
