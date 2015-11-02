@@ -10,13 +10,4 @@ public class SpawnEvent implements Event {
 		this.owner = owner;
 		this.exiled = toExile;
 	}
-
-	public void run() {
-
-	}
-
-	public void undo() {
-
-	}
-
 }

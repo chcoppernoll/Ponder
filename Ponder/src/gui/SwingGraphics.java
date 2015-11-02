@@ -1,6 +1,5 @@
 package gui;
 
-import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -36,20 +35,24 @@ public class SwingGraphics {
 	// TODO Alex
 	/*
 	 * Get Spawn Area to stack from the bottom for players 2 and 3
-	 * Set up a JAR build system for the artwork
 	 */
 	
 	// TODO Grayson
 	/*
 	 * Work on artwork
+	 * Ensure that the game works on friend's computers
 	 * Rework the PonderLogic API (it's getting slightly unruly)
 	 * 	Improve PonderLogic implementation (especially spawn logic)
+	 * Set up a JAR build system for the artwork
 	 */
 	
 	// TODO Game Logic
 	/*
 	 * No immediate backward jumps (This stuff needs events to work)
 	 * Undo moves
+	 * Able to jump after sliding
+	 * Be able to play events in client code
+	 * Rework system to enable game-switching
 	 * Possible to spawn a piece and not be able to end turn (very rare)
 	 */
 	
@@ -73,25 +76,22 @@ public class SwingGraphics {
 	public SwingGraphics(PonderLogic instance) {
 		logic = instance;
 		
-		ImageIcon piece = new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
-		ImageIcon flag = new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"));
-		
 		theme[0] = new ImageIcon[] {
-			piece,
-			flag
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))
 			//piece_with_flag
 		};
 		theme[1] = new ImageIcon[] {
-			piece,
-			flag
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))
 		};
 		theme[2] = new ImageIcon[] {
-			piece,
-			flag
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))
 		};
 		theme[3] = new ImageIcon[] {
-			piece,
-			flag		
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))		
 		};
 
 		initialize();
@@ -676,10 +676,10 @@ public class SwingGraphics {
 
 	// Placeholder for running non-local moves
 	public void runEvent(Event e) {
-		e.run();
+		
 	}
 	
 	public void undoEvent(Event e) {
-		e.undo();
+		
 	}
 }

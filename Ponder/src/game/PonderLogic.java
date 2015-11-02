@@ -1,7 +1,6 @@
 package game;
 
 import java.awt.Color;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -206,6 +205,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		
 		for (int y = 0; y != board.length; ++y) {
 			for (int x = 0; x != board[y].length; ++x) {
+				board[y][x].setIcon(null);
 				data.put(board[y][x], new GridData());
 				grid.put(new Position(x, y), board[y][x]);
 			}
@@ -536,5 +536,14 @@ public class PonderLogic implements GameLogic<JButton> {
 									 							  : !canPlayerSpawn(curr_player);
 	}
 
+	/**
+	 * Check if the given move is a back jump
+	 */
+	public boolean isBackJmp(JButton start, JButton end) {
+		Event lastEvent = curr_move.getLast();
+		
+		return (lastEvent instanceof MoveEvent) && positionOf(end).equals(((MoveEvent)lastEvent).from);
+	}
+	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
 }
