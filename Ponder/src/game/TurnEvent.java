@@ -6,15 +6,4 @@ public class TurnEvent implements Event {
 	public TurnEvent(int player) {
 		this.player = player;
 	}
-	
-	public void run() {
-
-	}
-
-	@Override
-	public void undo() {
-		// TODO Auto-generated method stub
-
-	}
-
 }

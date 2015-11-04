@@ -16,7 +16,10 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 
 import game.Event;
+import game.MoveEvent;
 import game.PonderLogic;
+import game.SpawnEvent;
+import game.TurnEvent;
 
 public class SwingGraphics {
 
@@ -425,17 +428,19 @@ public class SwingGraphics {
 										
 										if (logic.canSlide(from, src)) {
 											if (logic.hasMoved(from) || !logic.canCapFlag(from, src)) return;		// Movement ended
+											logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), true));
 											
 										} else {
 											JButton jmpd = logic.jmpPiece(from, src);
 											
 											// If jumping a piece (doesn't care about hasMoved since you can't select a piece that has moved)
-											// Add in checks agains
-												// Jumping backwards
-												// Jumping after a slide
-											if (jmpd != null) {// && to != logic.getLastJump().from) {
-												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from))			// Despawn the piece
+											if (jmpd != null) {
+												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from)) {			// Despawn the piece
 													move(jmpd, getStack(logic.getPieceOwner(jmpd)));
+													logic.addEvent(new SpawnEvent(logic.positionOf(jmpd), logic.getPieceOwner(jmpd), true));
+												}
+												
+												logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), false));
 												
 											} else
 												return;																// Movement ended
@@ -444,7 +449,6 @@ public class SwingGraphics {
 
 										System.out.println("Moving");
 										logic.enterMovePhase();						// Prevent spawning actions from occurring
-										//logic.addMove(src);						// Add a move to the event feed (performed in move ???)
 										move(from, src);							// Perform the move
 
 										logic.setColor(src, Color.GREEN);
@@ -672,10 +676,20 @@ public class SwingGraphics {
 
 	// Placeholder for running non-local moves
 	public void runEvent(Event e) {
-		
+		if (e instanceof MoveEvent) {
+			
+		} else if (e instanceof SpawnEvent) {
+			
+		} else if (e instanceof TurnEvent) {
+			
+		}
 	}
 	
 	public void undoEvent(Event e) {
-		
+		if (e instanceof MoveEvent) {
+			
+		} else if (e instanceof SpawnEvent) {
+			
+		}
 	}
 }

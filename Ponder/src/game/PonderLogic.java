@@ -573,6 +573,9 @@ public class PonderLogic implements GameLogic<JButton> {
 		return (lastEvent instanceof MoveEvent) && positionOf(end).equals(((MoveEvent)lastEvent).from);
 	}
 	
+	/**
+	 * Check if the last move was a slide
+	 */
 	public boolean wasSlide() {
 		if (curr_move.isEmpty()) return false;
 		
