@@ -162,7 +162,7 @@ public class PonderLogic implements GameLogic<JButton> {
 	 * @return null if a->b is an illegal move
 	 */
     public JButton jmpPiece(JButton a, JButton b) {
-		if (!canJmp(a, b) || !canCapFlag(a, b)) return null;
+		if (!canJmp(a, b) || !canCapFlag(a, b) || isBackJmp(a, b) || wasSlide()) return null;
 		
 		// Add in check to prevent backwards move
 		
@@ -566,9 +566,25 @@ public class PonderLogic implements GameLogic<JButton> {
 	 * Check if the given move is a back jump
 	 */
 	public boolean isBackJmp(JButton start, JButton end) {
+		if (curr_move.isEmpty()) return false;
+		
 		Event lastEvent = curr_move.getLast();
 		
 		return (lastEvent instanceof MoveEvent) && positionOf(end).equals(((MoveEvent)lastEvent).from);
+	}
+	
+	public boolean wasSlide() {
+		if (curr_move.isEmpty()) return false;
+		
+		Event last = curr_move.getLast();
+		
+		if (last instanceof SpawnEvent)
+			return true;
+		
+		else if (last instanceof MoveEvent)
+			return ((MoveEvent)last).isSlide;
+		
+		return false;
 	}
 	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
