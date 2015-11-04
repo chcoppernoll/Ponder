@@ -1,8 +1,14 @@
 package network;
 
+import java.sql.Connection;
 import java.util.Scanner;
 
 public class Server {
+
+	private final String insert = "INSERT INTO moves (Game_id, Move_id, Player_id, At_Pos_X, "
+			+ "At_Pos_Y, To_Pos_X, To_Pos_Y, Exiled, End_Of_Turn) "
+			+ "VALUES (?, Default, ?, ?, ?, ?, ?, ?, ?);";
+	Connection con;
 
 	public static void main(String[] args) {
 		Server server = new Server();
@@ -10,6 +16,7 @@ public class Server {
 	}
 
 	public void run() {
+
 		ServerSocketCreator create = new ServerSocketCreator();
 		Thread serverSock = new Thread(create);
 		serverSock.start();
