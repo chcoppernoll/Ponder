@@ -538,23 +538,6 @@ public class PonderLogic implements GameLogic<JButton> {
 									 							  : !canPlayerSpawn(curr_player);
 	}
 	
-	/**
-	 * Determines if the last move was a slide
-	 * @return True if the last move was a slide, false otherwise
-	 */
-	public boolean isSlide() {
-		if(curr_move.isEmpty()) {
-			return false;
-		}
-		
-		Event lastEvent = curr_move.getLast();
-		if(curr_move.getLast() instanceof MoveEvent) {
-			return ((MoveEvent) lastEvent).isSlide;
-		} else {
-			return false;
-		}
-	}
-	
 	public List<Event> addEvent (Event e) {
 		curr_move.addLast(e);
 		return curr_move;
@@ -581,15 +564,10 @@ public class PonderLogic implements GameLogic<JButton> {
 	public boolean wasSlide() {
 		if (curr_move.isEmpty()) return false;
 		
+		System.out.println("Calling");
+		
 		Event last = curr_move.getLast();
-		
-		if (last instanceof SpawnEvent)
-			return true;
-		
-		else if (last instanceof MoveEvent)
-			return ((MoveEvent)last).isSlide;
-		
-		return false;
+		return last instanceof MoveEvent && ((MoveEvent)last).isSlide;
 	}
 	
 	public void undoEvent(SwingGraphics view) {

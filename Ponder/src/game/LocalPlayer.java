@@ -19,8 +19,8 @@ public class LocalPlayer implements Player {
 		
 		PonderLogic logic = graphics.getLogic();
 		for (JButton piece : logic.getSurrounded()) {
-			//logic.addEvent(new SpawnEvent(logic.positionOf(piece), logic.getPieceOwner(piece), true))
-			graphics.move(piece, graphics.getStack(logic.getPieceOwner(piece)));
+			logic.addEvent(new SpawnEvent(logic.positionOf(piece), logic.getPieceOwner(piece), true));
+			graphics.runEvent(logic.lastEvent());
 		}
 		
 		//logic.addEvent(new TurnEvent());

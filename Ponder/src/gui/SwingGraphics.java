@@ -37,8 +37,7 @@ public class SwingGraphics {
 
 	// TODO Grayson
 	/*
-	 * Work on artwork
-	 * Ensure that the game works on friend's computers
+	 * Work on artwork (I'm changing this to be Thanksgiving week / end of Sprint 3)
 	 * Rework the PonderLogic API (it's getting slightly unruly)
 	 * 	Improve PonderLogic implementation (especially spawn logic)
 	 * Set up a JAR build system for the artwork
@@ -46,11 +45,7 @@ public class SwingGraphics {
 	
 	// TODO Game Logic
 	/*
-	 * Prevent jumping after sliding
-	 * No immediate backward jumps (This stuff needs events to work)
 	 * Undo moves
-	 * Able to jump after sliding
-	 * Be able to play events in client code
 	 * Rework system to enable game-switching
 	 * Possible to spawn a piece and not be able to end turn (very rare)
 	 */
@@ -58,15 +53,6 @@ public class SwingGraphics {
 	// TODO Game Improvements
 	/*
 	 * Add a line showing move direction ???
-	 * Abstract the graphics and logic by having all communication done with events (?)
-	 */
-
-	// Sprint 2
-	/*
-	 * Event classes
-	 * Basic server-client communication within the main game
-	 * Server/Database improvements
-	 * Rewrite SwingGraphics and PonderLogic
 	 */
 
 	/**
@@ -441,8 +427,8 @@ public class SwingGraphics {
 												
 												logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), false));
 												
-											} else
-												return;																// Movement ended
+											} else				// Movement ended
+												return;
 
 										}
 
@@ -453,20 +439,12 @@ public class SwingGraphics {
 										break;
 									default:
 										System.out.println("Defocusing");
-										logic.setColor(src, logic.getColor(src) == Color.BLACK ? Color.GREEN : Color.BLACK);
+										logic.setColor(src, Color.BLACK);
 										logic.select(null);
 								}
 								
 								break;
 							case MouseEvent.BUTTON2:			// MIDDLE-CLICK
-								JButton[][] adj = logic.adjacents(logic.positionOf(src));
-								
-								for (JButton imm : adj[0])
-									if (imm != null) imm.setBackground(Color.YELLOW);
-								
-								for (JButton nimm : adj[1])
-									if (nimm != null) nimm.setBackground(Color.MAGENTA);
-
 								break;
 								
 							case MouseEvent.BUTTON3:			// RIGHT-CLICK
