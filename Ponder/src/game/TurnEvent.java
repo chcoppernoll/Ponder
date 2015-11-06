@@ -11,10 +11,4 @@ public class TurnEvent implements Event {
 
 	}
 
-	@Override
-	public void undo() {
-		// TODO Auto-generated method stub
-
-	}
-
 }
