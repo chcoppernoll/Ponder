@@ -10,5 +10,4 @@ public class TurnEvent implements Event {
 	public void run() {
 
 	}
-
 }

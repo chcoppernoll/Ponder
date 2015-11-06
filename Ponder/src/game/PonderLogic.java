@@ -575,6 +575,9 @@ public class PonderLogic implements GameLogic<JButton> {
 		return (lastEvent instanceof MoveEvent) && positionOf(end).equals(((MoveEvent)lastEvent).from);
 	}
 	
+	/**
+	 * Check if the last move was a slide
+	 */
 	public boolean wasSlide() {
 		if (curr_move.isEmpty()) return false;
 		
@@ -601,5 +604,13 @@ public class PonderLogic implements GameLogic<JButton> {
 			
 	}
 		
+	public Event lastEvent() {
+		return curr_move.isEmpty() ? null : curr_move.getLast();
+	}
+	
+	public JButton getPiece(Position a) {
+		return grid.get(a);
+	}
+	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
 }
