@@ -430,9 +430,6 @@ public class SwingGraphics {
 											JButton jmpd = logic.jmpPiece(from, src);
 											
 											// If jumping a piece (doesn't care about hasMoved since you can't select a piece that has moved)
-											// Add in checks agains
-												// Jumping backwards
-												// Jumping after a slide
 											if (jmpd != null) {// && to != logic.getLastJump().from) {
 												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from))			// Despawn the piece
 													move(jmpd, getStack(logic.getPieceOwner(jmpd)));
@@ -676,6 +673,10 @@ public class SwingGraphics {
 	}
 	
 	public void undoEvent(Event e) {
-		
+		// Disable input while undoing so we can use the move method without generating an event.
+		boolean wasAcceptingInput = allow_local_input;
+		allow_local_input = false;
+		logic.undoEvent(this);
+		allow_local_input = wasAcceptingInput;
 	}
 }

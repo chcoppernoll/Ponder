@@ -9,6 +9,8 @@ import java.util.PriorityQueue;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import gui.SwingGraphics;
+
 class GridData {
 	public int owner = -1, num_flags = 0;
 	public boolean[] has_flag = new boolean[4];
@@ -587,5 +589,17 @@ public class PonderLogic implements GameLogic<JButton> {
 		return false;
 	}
 	
+	public void undoEvent(SwingGraphics view) {
+		if(curr_move.isEmpty())
+			return;
+		
+		if(curr_move.getLast() instanceof MoveEvent) {
+			MoveEvent lasMove = (MoveEvent)curr_move.getLast();
+		} else if(curr_move.getLast() instanceof SpawnEvent) {
+			
+		}
+			
+	}
+		
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
 }
