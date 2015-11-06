@@ -448,6 +448,7 @@ public class SwingGraphics {
 								break;
 								
 							case MouseEvent.BUTTON3:			// RIGHT-CLICK
+								undoEvent();
 								break;
 								
 							default:
@@ -646,8 +647,11 @@ public class SwingGraphics {
 	public void stopInput() {
 		allow_local_input = false;
 	}
-
-	// Placeholder for running non-local moves
+	
+	/**
+	 * Run the given event (game data and graphically) 
+	 * @param e
+	 */
 	public void runEvent(Event e) {
 		if (e instanceof MoveEvent) {
 			MoveEvent event = (MoveEvent)e;
@@ -675,11 +679,16 @@ public class SwingGraphics {
 		}
 	}
 	
-	public void undoEvent(Event e) {
-		// Disable input while undoing so we can use the move method without generating an event.
+	/**
+	 * Undo the last event
+	 * @param e
+	 */
+	public void undoEvent() {
 		boolean wasAcceptingInput = allow_local_input;
 		allow_local_input = false;
+		
 		logic.undoEvent(this);
+		
 		allow_local_input = wasAcceptingInput;
 	}
 }

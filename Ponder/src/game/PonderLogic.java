@@ -531,6 +531,10 @@ public class PonderLogic implements GameLogic<JButton> {
 				data.get(piece).has_moved = false;
 	}
 	
+	/**
+	 * Return whether the turn is over
+	 * @return
+	 */
 	public boolean turnOver() {
 		//player has pieces to move || player has pieces to spawn
 		return in_move_phase ? focus == null
@@ -538,6 +542,11 @@ public class PonderLogic implements GameLogic<JButton> {
 									 							  : !canPlayerSpawn(curr_player);
 	}
 	
+	/**
+	 * Add the event to the event queue
+	 * @param e
+	 * @return
+	 */
 	public List<Event> addEvent (Event e) {
 		curr_move.addLast(e);
 		return curr_move;
@@ -564,28 +573,55 @@ public class PonderLogic implements GameLogic<JButton> {
 	public boolean wasSlide() {
 		if (curr_move.isEmpty()) return false;
 		
-		System.out.println("Calling");
-		
 		Event last = curr_move.getLast();
 		return last instanceof MoveEvent && ((MoveEvent)last).isSlide;
 	}
 	
+	/**
+	 * Undo the last event. Undoes two events if the last was an exile
+	 * @param view
+	 */
 	public void undoEvent(SwingGraphics view) {
 		if(curr_move.isEmpty())
 			return;
 		
-		if(curr_move.getLast() instanceof MoveEvent) {
-			MoveEvent lasMove = (MoveEvent)curr_move.getLast();
-		} else if(curr_move.getLast() instanceof SpawnEvent) {
+		Event e = curr_move.getLast();
+		
+		if(e instanceof MoveEvent) {
+			MoveEvent event = (MoveEvent)e;
+			// Undo movement action
 			
+			
+			// Determine whether the move was the first one
+			
+		} else if(e instanceof SpawnEvent) {
+			SpawnEvent event = (SpawnEvent)e;
+			
+			if (event.exiled) {
+				// Undo piece exiling 
+				
+				undoEvent(view);
+			} else {
+				// Undo piece spawning
+				
+			}
 		}
 			
 	}
 		
+	/**
+	 * Return the last added event
+	 * @return
+	 */
 	public Event lastEvent() {
 		return curr_move.isEmpty() ? null : curr_move.getLast();
 	}
 	
+	/**
+	 * Get the piece at the given position
+	 * @param a
+	 * @return
+	 */
 	public JButton getPiece(Position a) {
 		return grid.get(a);
 	}
