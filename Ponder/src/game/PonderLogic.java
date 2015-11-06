@@ -590,5 +590,13 @@ public class PonderLogic implements GameLogic<JButton> {
 		return false;
 	}
 	
+	public Event lastEvent() {
+		return curr_move.isEmpty() ? null : curr_move.getLast();
+	}
+	
+	public JButton getPiece(Position a) {
+		return grid.get(a);
+	}
+	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
 }

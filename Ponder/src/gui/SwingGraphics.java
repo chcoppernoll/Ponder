@@ -408,9 +408,8 @@ public class SwingGraphics {
 								switch (logic.click(src)) {
 									case PonderLogic.SPAWN_CLICK:
 										if (logic.spawn(src, logic.getCurrPlayer())) {
-											move(logic.getStack(), src);				// Spawn the piece
-											logic.setStack(null);
-											self.color(Color.BLACK);					// Remove the spawn highlighting
+											logic.addEvent(new SpawnEvent(logic.positionOf(src), logic.getCurrPlayer(), false));
+											runEvent(logic.lastEvent());
 										}
 										
 										break;
@@ -436,8 +435,8 @@ public class SwingGraphics {
 											// If jumping a piece (doesn't care about hasMoved since you can't select a piece that has moved)
 											if (jmpd != null) {
 												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from)) {			// Despawn the piece
-													move(jmpd, getStack(logic.getPieceOwner(jmpd)));
 													logic.addEvent(new SpawnEvent(logic.positionOf(jmpd), logic.getPieceOwner(jmpd), true));
+													runEvent(logic.lastEvent());
 												}
 												
 												logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), false));
@@ -448,11 +447,7 @@ public class SwingGraphics {
 										}
 
 										System.out.println("Moving");
-										logic.enterMovePhase();						// Prevent spawning actions from occurring
-										move(from, src);							// Perform the move
-
-										logic.setColor(src, Color.GREEN);
-										logic.select(src);							// Select the new tile (or null if no more movement)
+										runEvent(logic.lastEvent());
 										updateMouseText(src);						// Update text
 										
 										break;
@@ -677,11 +672,28 @@ public class SwingGraphics {
 	// Placeholder for running non-local moves
 	public void runEvent(Event e) {
 		if (e instanceof MoveEvent) {
+			MoveEvent event = (MoveEvent)e;
+			JButton src = logic.getPiece(event.to);
+			
+			logic.enterMovePhase();						// Prevent spawning actions from occurring
+			move(logic.getPiece(event.from), src);							// Perform the move
+
+			logic.setColor(src, Color.GREEN);
+			logic.select(src);
 			
 		} else if (e instanceof SpawnEvent) {
+			SpawnEvent event = (SpawnEvent)e;
 			
+			if (event.exiled) {
+				move(logic.getPiece(event.pos), getStack(event.owner));
+				
+			} else {
+				move(logic.getStack(), logic.getPiece(event.pos));				// Spawn the piece
+				logic.setStack(null);
+				color(Color.BLACK);
+			}
 		} else if (e instanceof TurnEvent) {
-			
+			TurnEvent event = (TurnEvent)e;
 		}
 	}
 	
