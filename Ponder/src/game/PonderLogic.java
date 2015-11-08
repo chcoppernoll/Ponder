@@ -1,6 +1,7 @@
 package game;
 
 import java.awt.Color;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +18,9 @@ class GridData {
 	public Color color = Color.BLACK;
 	public boolean has_moved = false;
 	
+	public String toString() {
+		return "owner: " + owner + ", num_flags: " + num_flags + ", has_moved: " + has_moved;
+	}
 }
 
 class Position {
@@ -582,28 +586,60 @@ public class PonderLogic implements GameLogic<JButton> {
 	 * @param view
 	 */
 	public void undoEvent(SwingGraphics view) {
-		if(curr_move.isEmpty())
-			return;
+		if (curr_move.isEmpty()) return;
+		Event e = curr_move.removeLast();
 		
-		Event e = curr_move.getLast();
-		
-		if(e instanceof MoveEvent) {
+		if (e instanceof MoveEvent) {
 			MoveEvent event = (MoveEvent)e;
+			JButton start_tile = getPiece(event.from), end_tile = getPiece(event.to);
+			
 			// Undo movement action
+			view.move(end_tile, start_tile);
+			select(start_tile);
+			setColor(end_tile, Color.BLACK);
 			
+			// prevent cap'd flags from moving
+			boolean fs[] = flagsOn(start_tile);
+			boolean found = false;
+			for (int i = 0; i != 4; ++i)
+				if (fs[i] != event.movedFlags[i]) {
+					removeFlag(start_tile, i);
+					addFlag(end_tile, i);
+					
+					if (!found) {
+						end_tile.setIcon(view.getTheme()[i][1]);
+						found = true;
+					}
+				}
 			
-			// Determine whether the move was the first one
-			
-		} else if(e instanceof SpawnEvent) {
-			SpawnEvent event = (SpawnEvent)e;
-			
-			if (event.exiled) {
-				// Undo piece exiling 
-				
+			// Check whether the last move exiled a piece
+			if (!curr_move.isEmpty() && curr_move.getLast() instanceof SpawnEvent && ((SpawnEvent)curr_move.getLast()).exiled)
 				undoEvent(view);
-			} else {
-				// Undo piece spawning
 				
+			// Allow for respawning
+			else if (curr_move.isEmpty() || !(curr_move.getLast() instanceof MoveEvent)){
+				in_move_phase = false;
+				data.get(start_tile).has_moved = false;
+			}
+			
+		} else if (e instanceof SpawnEvent) {
+			SpawnEvent event = (SpawnEvent)e;
+
+			// Undo piece exiling 
+			if (event.exiled) {
+				view.move(view.getStack(event.owner), grid.get(event.pos));
+				data.get(getPiece(event.pos)).owner = event.owner;
+
+			// Undo piece spawning
+			} else {
+				PriorityQueue<Integer> tmp = spawn_sets[curr_player];
+				spawn_sets[curr_player] = new PriorityQueue<>();							// Use temporary spawn stack (move pushes 2 onto the queue)
+				view.move(getPiece(event.pos), view.getStack(curr_player));
+				spawn_sets[curr_player] = tmp;
+				spawn_sets[curr_player].add(0);
+				
+				// Reset mana cost
+				mana += canSlide(getPiece(event.pos), flags[curr_player]) ? 0.5 : 1.0;
 			}
 		}
 			

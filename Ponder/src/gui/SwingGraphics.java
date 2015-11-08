@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.awt.FlowLayout;
 
 import javax.swing.JFrame;
@@ -45,7 +46,8 @@ public class SwingGraphics {
 	
 	// TODO Game Logic
 	/*
-	 * Undo moves
+	 * Add in flag-tracking to the event system
+	 *   Big Problem with undoing moves
 	 * Rework system to enable game-switching
 	 * Possible to spawn a piece and not be able to end turn (very rare)
 	 */
@@ -165,6 +167,8 @@ public class SwingGraphics {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		frame.setTitle("Ponder");
+		//frame.setIconImage(image);
 		frame.setResizable(false);
 		frame.setBounds(100, 100, 810, 640);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -413,7 +417,7 @@ public class SwingGraphics {
 										
 										if (logic.canSlide(from, src)) {
 											if (logic.hasMoved(from) || !logic.canCapFlag(from, src)) return;		// Movement ended
-											logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), true));
+											logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), true, logic.flagsOn(from)));
 											
 										} else {
 											JButton jmpd = logic.jmpPiece(from, src);
@@ -425,7 +429,7 @@ public class SwingGraphics {
 													runEvent(logic.lastEvent());
 												}
 												
-												logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), false));
+												logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), false, logic.flagsOn(from)));
 												
 											} else				// Movement ended
 												return;
@@ -521,6 +525,14 @@ public class SwingGraphics {
 	 */
 	public void setTheme(ImageIcon[][] icons) {
 		theme = icons;
+	}
+	
+	/**
+	 * Get the current theming set
+	 * @return
+	 */
+	public ImageIcon[][] getTheme() {
+		return theme;
 	}
 	
 	/**
@@ -675,6 +687,7 @@ public class SwingGraphics {
 				color(Color.BLACK);
 			}
 		} else if (e instanceof TurnEvent) {
+			@SuppressWarnings("unused")
 			TurnEvent event = (TurnEvent)e;
 		}
 	}
