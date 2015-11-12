@@ -3,6 +3,7 @@ package gui;
 import java.awt.GridLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 
+import game.AttachEvent;
 import game.Event;
 import game.MoveEvent;
 import game.PonderLogic;
@@ -331,6 +333,16 @@ public class SwingGraphics {
 		settings.setBackground(Color.WHITE);
 		settings.setLayout(new GridLayout(9, 9, 1, 1));
 		
+		JButton newGame = new JButton("New Game");
+		newGame.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				self.reset();
+				self.closeSettings();
+			}
+		});
+		newGame.setBounds(0, 84, 10, 10);				// Don't know how to change it's appearance
+		settings.add(newGame);
+		
 
 		// Game List window
 		gameList.setVisible(false);
@@ -389,11 +401,12 @@ public class SwingGraphics {
 					
 					public void mouseClicked(MouseEvent e) {
 						if (!allow_local_input) return;
-						
 						JButton src = (JButton)e.getSource();
 						
 						switch (e.getButton()) {
 							case MouseEvent.BUTTON1:			// LEFT-CLICK
+								// switch on shift and ctrl-click
+								
 								// Select contextual operations
 								switch (logic.click(src)) {
 									case PonderLogic.SPAWN_CLICK:
@@ -449,6 +462,15 @@ public class SwingGraphics {
 								
 								break;
 							case MouseEvent.BUTTON2:			// MIDDLE-CLICK
+								int modifiers = e.getModifiers();
+								boolean shift = ((modifiers & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK);
+								boolean ctrl = ((modifiers & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK);
+								// Implement flag attach/drop using shift/ctrl-click
+								
+								//for (int i = 0; i != 4; ++i) {
+									//logic.addEvent(new AttachEvent(logic.positionOf(src), i, false));
+								//}
+								
 								break;
 								
 							case MouseEvent.BUTTON3:			// RIGHT-CLICK

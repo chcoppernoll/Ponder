@@ -15,11 +15,12 @@ import network.Client;
 public class Ponder {
 	public static void main(String[] args) {
 		PonderLogic logic = new PonderLogic();
-		SwingGraphics window = new SwingGraphics(logic);
+		final SwingGraphics window = new SwingGraphics(logic);
 		
 		LocalPlayer local = new LocalPlayer();
 		NetworkPlayer friend = new NetworkPlayer();
 		Player[] players = new Player[]{ local, local, local, local };
+		
 		Client net = new Client();
 		
 		EventQueue.invokeLater(new Runnable() {
@@ -32,9 +33,8 @@ public class Ponder {
 			}
 		});
 		
+		window.reset();
 		while (true) {
-			window.reset();
-			
 			while (logic.victor() == -1) {
 				logic.nextTurn();
 

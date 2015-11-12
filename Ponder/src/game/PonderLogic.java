@@ -599,6 +599,8 @@ public class PonderLogic implements GameLogic<JButton> {
 			setColor(end_tile, Color.BLACK);
 			
 			// prevent cap'd flags from moving
+				// NOTE: This won't be necessary if I add in pick/drop functionality (move would only move the attached flags)
+					// That would entail the creation of another event though
 			boolean fs[] = flagsOn(start_tile);
 			boolean found = false;
 			for (int i = 0; i != 4; ++i)
