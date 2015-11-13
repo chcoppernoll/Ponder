@@ -23,7 +23,8 @@ public class LocalPlayer implements Player {
 			graphics.runEvent(logic.lastEvent());
 		}
 		
-		//logic.addEvent(new TurnEvent());
+		logic.addEvent(new TurnEvent(logic.getCurrPlayer()));
+		
 		// have to send to client
 	}
 

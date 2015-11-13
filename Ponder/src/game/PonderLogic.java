@@ -71,6 +71,17 @@ public class PonderLogic implements GameLogic<JButton> {
 	private PriorityQueue<Integer>[] spawn_sets = (PriorityQueue<Integer>[])new PriorityQueue[4];
 	private LinkedList<Event> curr_move = new LinkedList<>();
 	
+	public void reset() {
+		mana = 1.;
+		curr_player = -1;
+		in_move_phase = false;
+		stack = null;
+		focus = null;
+		curr_move.clear();
+		for (PriorityQueue<Integer> q : spawn_sets)
+			q.clear();
+	}
+	
 	/**
 	 * @param pos
 	 * @return whether pos is a valid grid position

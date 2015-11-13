@@ -19,10 +19,14 @@ import javax.swing.SwingConstants;
 
 import game.AttachEvent;
 import game.Event;
+import game.LocalPlayer;
 import game.MoveEvent;
+import game.NetworkPlayer;
+import game.Player;
 import game.PonderLogic;
 import game.SpawnEvent;
 import game.TurnEvent;
+import network.Client;
 
 public class SwingGraphics {
 
@@ -37,20 +41,31 @@ public class SwingGraphics {
 	
 	private boolean inSettings = false, inGameList = false, allow_local_input = true;
 	private JPanel settings = new JPanel(), gameList = new JPanel(), grid = new JPanel();		// grid??
+	
+	private LocalPlayer local;
+	private NetworkPlayer away;
+	private Player[] clients;
+	
+	public void setClientele(LocalPlayer loc, NetworkPlayer bud, Player[] cls) {
+		local = loc;
+		away = bud;
+		clients = cls != null ? cls : new Player[]{ loc, loc, loc, loc };
+	}
+	
+	public Player getCurrentPlayer() {
+		return clients[logic.getCurrPlayer()];
+	}
 
 	// TODO Grayson
 	/*
 	 * Work on artwork (I'm changing this to be Thanksgiving week / end of Sprint 3)
-	 * Rework the PonderLogic API (it's getting slightly unruly)
-	 * 	Improve PonderLogic implementation (especially spawn logic)
 	 * Set up a JAR build system for the artwork
 	 */
 	
 	// TODO Game Logic
 	/*
-	 * Add in flag-tracking to the event system
-	 *   Big Problem with undoing moves
-	 * Rework system to enable game-switching
+	 * Add in grabbing and dropping pieces (using shift/ctrl clicks)
+	 * After ending a game, curr_player == 0
 	 * Possible to spawn a piece and not be able to end turn (very rare)
 	 */
 	
@@ -331,16 +346,27 @@ public class SwingGraphics {
 		settings.setBounds(150, 84, 500, 500);
 		frame.getContentPane().add(settings);
 		settings.setBackground(Color.WHITE);
-		settings.setLayout(new GridLayout(9, 9, 1, 1));
+		settings.setLayout(new GridLayout(9, 9, 1, 1));			// This may make adding buttons difficult
 		
 		JButton newGame = new JButton("New Game");
 		newGame.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				self.reset();
 				self.closeSettings();
+				self.clients[0] = self.clients[1] = self.clients[2] = self.clients[3] = local;
+				self.logic.reset();
+				
+				panel_1.removeAll();
+				panel_2.removeAll();
+				panel_3.removeAll();
+				panel_4.removeAll();
+				panel_1.repaint();
+				panel_2.repaint();
+				panel_3.repaint();
+				panel_4.repaint();
 			}
 		});
-		newGame.setBounds(0, 84, 10, 10);				// Don't know how to change it's appearance
+		newGame.setBounds(0, 84, 10, 10);				// Don't know how to change it's appearance in the settings frame
 		settings.add(newGame);
 		
 
