@@ -15,8 +15,8 @@ import network.Client;
 public class Ponder {
 	public static void main(String[] args) {
 		PonderLogic logic = new PonderLogic();
-		final SwingGraphics window = new SwingGraphics(logic);
 		Client net = new Client();
+		final SwingGraphics window = new SwingGraphics(logic, net);
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -28,7 +28,7 @@ public class Ponder {
 			}
 		});
 		
-		window.setClientele(new LocalPlayer(), new NetworkPlayer(), null);				// pass null for players and window will create the Player[]
+		window.setClientele(new LocalPlayer(), new NetworkPlayer(), null);				// window creates a default player array
 		window.reset();
 		
 		while (true) {
@@ -39,7 +39,7 @@ public class Ponder {
 				curr.onTurnStart(window, net);
 
 				// wait for the player to finish their turn
-				while (logic.getCurrPlayer() != -1 && !curr.turnOver(window, net)) {
+				while (logic.getCurrPlayer() != -1 && !curr.turnOver(window, net)) {	// Network communication/Event loading is handled within NetworkPlayer.turnOver
 					// Have some network communication in here ???
 					boolean tmp = curr.turnOver(window, net);
 					System.out.print(tmp ? "" : ""); // The program never exits this loop without this statement
@@ -48,10 +48,10 @@ public class Ponder {
 				if (logic.getCurrPlayer() != -1) curr.onTurnEnd(window, net);
 			}
 			
-			System.out.println("Won by player " + (logic.getCurrPlayer() + 1));
+			window.displayVictor(logic.getCurrPlayer() + 1);
 			
 			// Pause before clearing board and starting new game
-			while (logic.getCurrPlayer() != -1) System.out.println("");
+			while (logic.getCurrPlayer() != -1) System.out.println("");					// Println necessary to provide time for concurrent communication
 		}
 	}
 }

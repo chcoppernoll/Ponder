@@ -31,7 +31,7 @@ import network.Client;
 public class SwingGraphics {
 
 	private JFrame frame = new JFrame();
-	private JPanel[] players = new JPanel[4];					// Player name tags
+	private JPanel[] player_tags = new JPanel[4];					// Player name tags
 	private ImageIcon[][] theme = new ImageIcon[4][2];			// Current theme set
 	private JPanel gameHeader = new JPanel();					// Game header
 	private JButton[][] cells = new JButton[9][9];				// Tiles
@@ -44,16 +44,18 @@ public class SwingGraphics {
 	
 	private LocalPlayer local;
 	private NetworkPlayer away;
-	private Player[] clients;
+	private Player[] players;
+	
+	private Client client;
 	
 	public void setClientele(LocalPlayer loc, NetworkPlayer bud, Player[] cls) {
 		local = loc;
 		away = bud;
-		clients = cls != null ? cls : new Player[]{ loc, loc, loc, loc };
+		players = cls != null ? cls : new Player[]{ loc, loc, loc, loc };
 	}
 	
 	public Player getCurrentPlayer() {
-		return clients[logic.getCurrPlayer()];
+		return players[logic.getCurrPlayer()];
 	}
 
 	// TODO Grayson
@@ -64,8 +66,7 @@ public class SwingGraphics {
 	
 	// TODO Game Logic
 	/*
-	 * Add in grabbing and dropping pieces (using shift/ctrl clicks)
-	 * After ending a game, curr_player == 0
+	 * Add in grabbing and dropping flags (using shift/ctrl clicks)
 	 * Possible to spawn a piece and not be able to end turn (very rare)
 	 */
 	
@@ -77,8 +78,9 @@ public class SwingGraphics {
 	/**
 	 * Create the application.
 	 */
-	public SwingGraphics(PonderLogic instance) {
+	public SwingGraphics(PonderLogic instance, Client client) {
 		logic = instance;
+		this.client = client;
 		
 		theme[0] = new ImageIcon[] {
 			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
@@ -101,6 +103,10 @@ public class SwingGraphics {
 		initialize();
 	}
 	
+	public void displayVictor(int player) {
+		((JLabel)gameHeader.getComponent(0)).setText("Won by Player " + (logic.getCurrPlayer() + 1));
+	}
+	
 	/**
 	 * Setup a new game state
 	 */
@@ -112,7 +118,7 @@ public class SwingGraphics {
 		
 		// Delete old pieces ?
 		
-		for (int i = 0; i != players.length; ++i)
+		for (int i = 0; i != player_tags.length; ++i)
 			setUpPieces(i);
 		
 		setUpFlags();
@@ -233,16 +239,16 @@ public class SwingGraphics {
 		frame.getContentPane().add(btnGameList);
 
 		// Set Up Player Quadrants
-		for (int i = 0; i != players.length; ++i) {
-			players[i] = new JPanel();
-			players[i].setBounds(i < 2 ? 41 : 670, i % 2 == 0 ? 84 : 363, 89, 227);
-			players[i].setLayout(null);
+		for (int i = 0; i != player_tags.length; ++i) {
+			player_tags[i] = new JPanel();
+			player_tags[i].setBounds(i < 2 ? 41 : 670, i % 2 == 0 ? 84 : 363, 89, 227);
+			player_tags[i].setLayout(null);
 			
 			// Add player label
 			JLabel player_name = new JLabel("Player " + (i + 1));
 			player_name.setBounds(i < 2 ? 7 : 0, i % 2 == 0 ? 0 : 198, 82, 23);
 			if (i < 2) player_name.setHorizontalAlignment(SwingConstants.RIGHT);
-			players[i].add(player_name);
+			player_tags[i].add(player_name);
 			
 			// Add flag control icons
 			for (int j = 0; j != 4; ++j) {
@@ -253,34 +259,34 @@ public class SwingGraphics {
 				else
 					flag_icon.setBounds(0 + 22 * j, i % 2 == 0 ? 34 : 173, 20, 20);
 				
-				players[i].add(flag_icon);
+				player_tags[i].add(flag_icon);
 			}
 			
 			// Add Spawn Stack
 			// Waiting for work on spawn stack
 			
-			frame.getContentPane().add(players[i]);
+			frame.getContentPane().add(player_tags[i]);
 		}
 		
 		// Player "Spawn" stack
 		JPanel panel_1 = new JPanel();
 		panel_1.setBounds(34, 65, 55, 162);
-		players[0].add(panel_1);
+		player_tags[0].add(panel_1);
 		panel_1.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setBounds(34, 0, 55, 162);
-		players[1].add(panel_2);
+		player_tags[1].add(panel_2);
 		panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		JPanel panel_3 = new JPanel();
 		panel_3.setBounds(0, 65, 55, 162);
-		players[2].add(panel_3);
+		player_tags[2].add(panel_3);
 		panel_3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		JPanel panel_4 = new JPanel();
 		panel_4.setBounds(0, 0, 55, 162);
-		players[3].add(panel_4);
+		player_tags[3].add(panel_4);
 		panel_4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		// Spawn code
@@ -353,7 +359,7 @@ public class SwingGraphics {
 			public void mouseClicked(MouseEvent e) {
 				self.reset();
 				self.closeSettings();
-				self.clients[0] = self.clients[1] = self.clients[2] = self.clients[3] = local;
+				self.players[0] = self.players[1] = self.players[2] = self.players[3] = local;
 				self.logic.reset();
 				
 				panel_1.removeAll();
@@ -589,7 +595,7 @@ public class SwingGraphics {
 	 * @param player
 	 */
 	public JLabel getLabel(int player) {
-		return (JLabel)players[player].getComponents()[0];
+		return (JLabel)player_tags[player].getComponents()[0];
 	}
 	
 	/**
@@ -608,7 +614,7 @@ public class SwingGraphics {
 	public JLabel[] getFlagIcons(int player) {
 		JLabel[] ret = new JLabel[4];
 		
-		Component[] subs = players[player].getComponents();
+		Component[] subs = player_tags[player].getComponents();
 		for (int i = 0; i != ret.length; ++i)
 			ret[i] = (JLabel)subs[i + 1];
 		
@@ -621,7 +627,7 @@ public class SwingGraphics {
 	 * @return
 	 */
 	public JPanel getStack(int player) {
-		return (JPanel)players[player].getComponents()[5];
+		return (JPanel)player_tags[player].getComponents()[5];
 	}
 
 	/**
