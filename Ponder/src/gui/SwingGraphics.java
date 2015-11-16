@@ -17,7 +17,6 @@ import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 
-import game.AttachEvent;
 import game.Event;
 import game.LocalPlayer;
 import game.MoveEvent;
@@ -352,7 +351,6 @@ public class SwingGraphics {
 		settings.setBounds(150, 84, 500, 500);
 		frame.getContentPane().add(settings);
 		settings.setBackground(Color.WHITE);
-		settings.setLayout(new GridLayout(9, 9, 1, 1));			// This may make adding buttons difficult
 		
 		JButton newGame = new JButton("New Game");
 		newGame.addMouseListener(new MouseAdapter() {
@@ -372,7 +370,8 @@ public class SwingGraphics {
 				panel_4.repaint();
 			}
 		});
-		newGame.setBounds(0, 84, 10, 10);				// Don't know how to change it's appearance in the settings frame
+		settings.setLayout(null);
+		newGame.setBounds(110, 145, 307, 54);				// Don't know how to change it's appearance in the settings frame
 		settings.add(newGame);
 		
 
@@ -381,7 +380,7 @@ public class SwingGraphics {
 		gameList.setBounds(150, 84, 500, 500);
 		frame.getContentPane().add(gameList);
 		gameList.setBackground(Color.WHITE);
-		gameList.setLayout(new GridLayout(9, 9, 1, 1));
+		gameList.setLayout(null);
 		
 		JPanel gameList = new JPanel();
 		gameList.setVisible(false);
