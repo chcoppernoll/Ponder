@@ -58,6 +58,10 @@ public class SwingGraphics {
 	public Player getCurrentPlayer() {
 		return players[logic.getCurrPlayer()];
 	}
+	
+	public JFrame getFrame() {
+		return frame;
+	}
 
 	// TODO Grayson
 	/*
@@ -207,6 +211,7 @@ public class SwingGraphics {
 				if(inGameList) {
 					closeGameList();
 				}
+				
 				if(inSettings) {
 					closeSettings();
 				} else {
@@ -385,6 +390,8 @@ public class SwingGraphics {
 				self.closeSettings();
 				self.players[0] = self.players[1] = self.players[2] = self.players[3] = local;
 				self.logic.reset();
+				
+				self.color(Color.BLACK);
 				
 				panel_1.removeAll();
 				panel_2.removeAll();
