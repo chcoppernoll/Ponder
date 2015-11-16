@@ -26,6 +26,8 @@ import game.PonderLogic;
 import game.SpawnEvent;
 import game.TurnEvent;
 import network.Client;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
 
 public class SwingGraphics {
 
@@ -188,7 +190,7 @@ public class SwingGraphics {
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	private void initialize() {		
 		frame.setTitle("Ponder");
 		//frame.setIconImage(image);
 		frame.setResizable(false);
@@ -343,11 +345,35 @@ public class SwingGraphics {
 		
 		JLabel txtpnGameDataGoes = new JLabel();
 		txtpnGameDataGoes.setBounds(149, 31, 209, 20);
-		gameHeader.add(txtpnGameDataGoes);
+		gameHeader.add(txtpnGameDataGoes);;
+		
+
+		// Game List window
+		gameList.setVisible(false);
+		gameList.setBounds(150, 84, 500, 500);
+		frame.getContentPane().add(gameList);
+		gameList.setBackground(Color.WHITE);
+		gameList.setLayout(null);
+		
+		JList list = new JList();
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.setBounds(499, 421, -498, -420);
+		gameList.add(list);
+		
+		JButton loadGame = new JButton("Load game");
+		loadGame.setBounds(211, 421, 89, 23);
+		gameList.add(loadGame);
+		
+		JPanel gameList = new JPanel();
+		gameList.setVisible(false);
+		gameList.setBounds(150, 84, 500, 500);
+		frame.getContentPane().add(gameList);
+		gameList.setBackground(Color.WHITE);
+		gameList.setLayout(new GridLayout(9, 9, 1, 1));
 		
 		
 		// Settings window
-		settings.setVisible(false);;
+		settings.setVisible(false);
 		settings.setBounds(150, 84, 500, 500);
 		frame.getContentPane().add(settings);
 		settings.setBackground(Color.WHITE);
@@ -373,21 +399,6 @@ public class SwingGraphics {
 		settings.setLayout(null);
 		newGame.setBounds(110, 145, 307, 54);				// Don't know how to change it's appearance in the settings frame
 		settings.add(newGame);
-		
-
-		// Game List window
-		gameList.setVisible(false);
-		gameList.setBounds(150, 84, 500, 500);
-		frame.getContentPane().add(gameList);
-		gameList.setBackground(Color.WHITE);
-		gameList.setLayout(null);
-		
-		JPanel gameList = new JPanel();
-		gameList.setVisible(false);
-		gameList.setBounds(150, 84, 500, 500);
-		frame.getContentPane().add(gameList);
-		gameList.setBackground(Color.WHITE);
-		gameList.setLayout(new GridLayout(9, 9, 1, 1));
 
 
 		// Mouse Labeling
