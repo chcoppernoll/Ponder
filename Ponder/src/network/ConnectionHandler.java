@@ -2,12 +2,14 @@ package network;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class ConnectionHandler implements Runnable {
@@ -16,24 +18,32 @@ public class ConnectionHandler implements Runnable {
 	private final String insert = "INSERT INTO moves (Move_id, Game_id, Player_id, At_Pos_X, "
 			+ "At_Pos_Y, To_Pos_X, To_Pos_Y, Exiled, End_Of_Turn) "
 			+ "VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?);";
-	private final String get = "SELECT * FROM moves WHERE Game_id = ? ORDER BY Move_id;";
+	private final String getAll = "SELECT * FROM moves WHERE Game_id = ? ORDER BY Move_id";
+	private final String getGames = "SELECT * FROM game ORDER BY Game_id";
+	private final String createGame = "INSERT INTO game (Game_id, Game_Name, Game_In_Progress) "
+			+ "VALUES (DEFAULT, '', 0)";
+	// private final String getAfter = "SELECT * FROM moves WHERE Game_id = ?"
+	// + " AND Move_id > ? ORDER BY Move_id";
 	Connection con;
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
 
 	public ConnectionHandler(Socket sock) {
-		this.sock = sock;
+		try {
+			this.sock = sock;
+			in = new ObjectInputStream(sock.getInputStream());
+			out = new ObjectOutputStream(sock.getOutputStream());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		ObjectInputStream in = null;
 		try {
 			con = DriverManager
 					.getConnection("jdbc:mysql://71.13.212.62:3306/ponder");
-			in = new ObjectInputStream(sock.getInputStream());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -46,12 +56,19 @@ public class ConnectionHandler implements Runnable {
 							.readObject();
 
 					switch (comm.getAction()) {
+					case 0:
+						this.getGameList(comm);
+						break;
 					case 1:
-						this.addMoves(comm);
+						this.loadGame(comm);
+
 						break; // Save moves
 					case 2:
-						this.getState(comm);
-						break; // Get game state
+						this.addMoves(comm);
+						break; // Load game state
+					case 3:
+						this.createGame(comm);
+						break;
 					default:
 						break;
 					}
@@ -67,13 +84,60 @@ public class ConnectionHandler implements Runnable {
 
 	}
 
-	private CommunicationObject getMoves(CommunicationObject comm) {
+	private int getGameList(CommunicationObject comm) {
+		try {
+			PreparedStatement prep = con.prepareStatement(this.getGames);
+			ResultSet results = prep.executeQuery();
+			ArrayList<Integer> gameIds = new ArrayList<Integer>();
+			while (results.next()) {
+				gameIds.add(results.getInt("Game_id"));
+			}
+			comm.setGameIds(gameIds);
+			out.writeObject(comm);
+		} catch (IOException e) {
+			return 1;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return 1;
+		}
+		return 0;
+	}
+
+	private int createGame(CommunicationObject comm) {
+		try {
+			PreparedStatement prep = con.prepareStatement(this.createGame);
+			prep.executeUpdate();
+			return this.getGameList(comm);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	private int loadGame(CommunicationObject comm) {
 		int gameId = comm.getGameId();
 		try {
-			PreparedStatement prep = con.prepareStatement(this.get);
-			LinkedList<Event> moves = new LinkedList<Event>();
+			PreparedStatement prep = con.prepareStatement(this.getAll);
 			prep.setInt(1, gameId);
 			ResultSet results = prep.executeQuery();
+			comm = parseMoves(comm, results);
+
+			out.writeObject(comm);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return 1;
+		}
+		return 0;
+	}
+
+	private CommunicationObject parseMoves(CommunicationObject comm,
+			ResultSet results) {
+		LinkedList<Event> moves = new LinkedList<Event>();
+		try {
 			while (results.next()) {
 				if (((Boolean) results.getBoolean("Exiled")) != null) {
 					// Spawn event
@@ -104,7 +168,6 @@ public class ConnectionHandler implements Runnable {
 
 				comm.setMoves(moves);
 			}
-
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -157,9 +220,5 @@ public class ConnectionHandler implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	private void getState(CommunicationObject comm) {
-
 	}
 }
