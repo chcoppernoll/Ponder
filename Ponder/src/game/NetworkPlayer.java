@@ -20,14 +20,21 @@ public class NetworkPlayer implements Player {
 	private LinkedList<Event> move;
 
 	public void onTurnStart(SwingGraphics graphics, Client net) {
-		//send a message
+		//send "ack" server/client message
 		move = new LinkedList<>();
 	}
 
 	public void onTurnEnd(SwingGraphics graphics, Client net) {
-		for (Event e : move) {
+		for (int i = 0; i < move.size(); ++i) {
+			Event e = move.get(i);
 			graphics.runEvent(e);
 			
+			// Perform jump and despawning concurrently
+			if (e instanceof SpawnEvent)
+				if (!((SpawnEvent)e).exiled && i != move.size() - 1 && (move.get(i + 1) instanceof MoveEvent))
+					graphics.runEvent(move.get(++i));
+			
+			// Delay so user understands movement
 			try {
 				Thread.sleep(1000);							// Needs tuning
 				
