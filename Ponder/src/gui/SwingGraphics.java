@@ -365,6 +365,8 @@ public class SwingGraphics {
 				self.players[0] = self.players[1] = self.players[2] = self.players[3] = local;
 				self.logic.reset();
 				
+				self.color(Color.BLACK);
+				
 				panel_1.removeAll();
 				panel_2.removeAll();
 				panel_3.removeAll();
