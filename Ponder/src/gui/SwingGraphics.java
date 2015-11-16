@@ -56,6 +56,10 @@ public class SwingGraphics {
 	public Player getCurrentPlayer() {
 		return players[logic.getCurrPlayer()];
 	}
+	
+	public JFrame getFrame() {
+		return frame;
+	}
 
 	// TODO Grayson
 	/*
@@ -205,6 +209,7 @@ public class SwingGraphics {
 				if(inGameList) {
 					closeGameList();
 				}
+				
 				if(inSettings) {
 					closeSettings();
 				} else {
