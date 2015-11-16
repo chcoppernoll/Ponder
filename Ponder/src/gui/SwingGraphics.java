@@ -28,6 +28,7 @@ import game.TurnEvent;
 import network.Client;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
+import javax.swing.AbstractListModel;
 
 public class SwingGraphics {
 
@@ -361,13 +362,30 @@ public class SwingGraphics {
 		gameList.setLayout(null);
 		
 		JList list = new JList();
+		list.setModel(new AbstractListModel() {
+			String[] values = new String[] {};
+			public int getSize() {
+				return values.length;
+			}
+			public Object getElementAt(int index) {
+				return values[index];
+			}
+		});
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setBounds(499, 421, -498, -420);
+		list.setBounds(499, 395, -498, -394);
 		gameList.add(list);
 		
 		JButton loadGame = new JButton("Load game");
-		loadGame.setBounds(211, 421, 89, 23);
+		loadGame.setBounds(80, 424, 107, 23);
 		gameList.add(loadGame);
+		
+		JButton createGame = new JButton("Create game");
+		createGame.setBounds(197, 424, 107, 23);
+		gameList.add(createGame);
+		
+		JButton btnJoinGame = new JButton("Join game");
+		btnJoinGame.setBounds(314, 424, 107, 23);
+		gameList.add(btnJoinGame);
 		
 		JPanel gameList = new JPanel();
 		gameList.setVisible(false);
