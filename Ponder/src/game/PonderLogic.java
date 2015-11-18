@@ -10,12 +10,17 @@ import java.util.PriorityQueue;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import gui.SwingGraphics;
+
 class GridData {
 	public int owner = -1, num_flags = 0;
 	public boolean[] has_flag = new boolean[4];
 	public Color color = Color.BLACK;
 	public boolean has_moved = false;
 	
+	public String toString() {
+		return "owner: " + owner + ", num_flags: " + num_flags + ", has_moved: " + has_moved;
+	}
 }
 
 class Position {
@@ -65,6 +70,17 @@ public class PonderLogic implements GameLogic<JButton> {
 	@SuppressWarnings("unchecked")
 	private PriorityQueue<Integer>[] spawn_sets = (PriorityQueue<Integer>[])new PriorityQueue[4];
 	private LinkedList<Event> curr_move = new LinkedList<>();
+	
+	public void reset() {
+		mana = 1.;
+		curr_player = -1;
+		in_move_phase = false;
+		stack = null;
+		focus = null;
+		curr_move.clear();
+		for (PriorityQueue<Integer> q : spawn_sets)
+			q.clear();
+	}
 	
 	/**
 	 * @param pos
@@ -163,7 +179,7 @@ public class PonderLogic implements GameLogic<JButton> {
 	 * @return null if a->b is an illegal move
 	 */
     public JButton jmpPiece(JButton a, JButton b) {
-		if (!canJmp(a, b) || !canCapFlag(a, b)) return null;
+		if (!canJmp(a, b) || !canCapFlag(a, b) || isBackJmp(a, b) || wasSlide()) return null;
 		
 		// Add in check to prevent backwards move
 		
@@ -206,6 +222,7 @@ public class PonderLogic implements GameLogic<JButton> {
 		
 		for (int y = 0; y != board.length; ++y) {
 			for (int x = 0; x != board[y].length; ++x) {
+				board[y][x].setIcon(null);
 				data.put(board[y][x], new GridData());
 				grid.put(new Position(x, y), board[y][x]);
 			}
@@ -529,12 +546,134 @@ public class PonderLogic implements GameLogic<JButton> {
 				data.get(piece).has_moved = false;
 	}
 	
+	/**
+	 * Return whether the turn is over
+	 * @return
+	 */
 	public boolean turnOver() {
 		//player has pieces to move || player has pieces to spawn
 		return in_move_phase ? focus == null
 							 : spawn_sets[curr_player].size() < 4 ? false
 									 							  : !canPlayerSpawn(curr_player);
 	}
+	
+	/**
+	 * Add the event to the event queue
+	 * @param e
+	 * @return
+	 */
+	public List<Event> addEvent (Event e) {
+		curr_move.addLast(e);
+		return curr_move;
+	}
+	
+	public void clearEvents() {
+		curr_move.clear();
+	}
 
+	/**
+	 * Check if the given move is a back jump
+	 */
+	public boolean isBackJmp(JButton start, JButton end) {
+		if (curr_move.isEmpty()) return false;
+		
+		Event lastEvent = curr_move.getLast();
+		
+		return (lastEvent instanceof MoveEvent) && positionOf(end).equals(((MoveEvent)lastEvent).from);
+	}
+	
+	/**
+	 * Check if the last move was a slide
+	 */
+	public boolean wasSlide() {
+		if (curr_move.isEmpty()) return false;
+		
+		Event last = curr_move.getLast();
+		return last instanceof MoveEvent && ((MoveEvent)last).isSlide;
+	}
+	
+	/**
+	 * Undo the last event. Undoes two events if the last was an exile
+	 * @param view
+	 */
+	public void undoEvent(SwingGraphics view) {
+		if (curr_move.isEmpty()) return;
+		Event e = curr_move.removeLast();
+		
+		if (e instanceof MoveEvent) {
+			MoveEvent event = (MoveEvent)e;
+			JButton start_tile = getPiece(event.from), end_tile = getPiece(event.to);
+			
+			// Undo movement action
+			view.move(end_tile, start_tile);
+			select(start_tile);
+			setColor(end_tile, Color.BLACK);
+			
+			// prevent cap'd flags from moving
+				// NOTE: This won't be necessary if I add in pick/drop functionality (move would only move the attached flags)
+					// That would entail the creation of another event though
+			boolean fs[] = flagsOn(start_tile);
+			boolean found = false;
+			for (int i = 0; i != 4; ++i)
+				if (fs[i] != event.movedFlags[i]) {
+					removeFlag(start_tile, i);
+					addFlag(end_tile, i);
+					
+					if (!found) {
+						end_tile.setIcon(view.getTheme()[i][1]);
+						found = true;
+					}
+				}
+			
+			// Check whether the last move exiled a piece
+			if (!curr_move.isEmpty() && curr_move.getLast() instanceof SpawnEvent && ((SpawnEvent)curr_move.getLast()).exiled)
+				undoEvent(view);
+				
+			// Allow for respawning
+			else if (curr_move.isEmpty() || !(curr_move.getLast() instanceof MoveEvent)){
+				in_move_phase = false;
+				data.get(start_tile).has_moved = false;
+			}
+			
+		} else if (e instanceof SpawnEvent) {
+			SpawnEvent event = (SpawnEvent)e;
+
+			// Undo piece exiling 
+			if (event.exiled) {
+				view.move(view.getStack(event.owner), grid.get(event.pos));
+				data.get(getPiece(event.pos)).owner = event.owner;
+
+			// Undo piece spawning
+			} else {
+				PriorityQueue<Integer> tmp = spawn_sets[curr_player];
+				spawn_sets[curr_player] = new PriorityQueue<>();							// Use temporary spawn stack (move pushes 2 onto the queue)
+				view.move(getPiece(event.pos), view.getStack(curr_player));
+				spawn_sets[curr_player] = tmp;
+				spawn_sets[curr_player].add(0);
+				
+				// Reset mana cost
+				mana += canSlide(getPiece(event.pos), flags[curr_player]) ? 0.5 : 1.0;
+			}
+		}
+			
+	}
+		
+	/**
+	 * Return the last added event
+	 * @return
+	 */
+	public Event lastEvent() {
+		return curr_move.isEmpty() ? null : curr_move.getLast();
+	}
+	
+	/**
+	 * Get the piece at the given position
+	 * @param a
+	 * @return
+	 */
+	public JButton getPiece(Position a) {
+		return grid.get(a);
+	}
+	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;
 }

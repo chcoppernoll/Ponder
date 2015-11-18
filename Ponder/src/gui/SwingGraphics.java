@@ -1,11 +1,14 @@
 package gui;
 
-import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.awt.RenderingHints;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
+import java.util.Arrays;
 import java.awt.FlowLayout;
 
 import javax.swing.JFrame;
@@ -17,12 +20,22 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 
 import game.Event;
+import game.LocalPlayer;
+import game.MoveEvent;
+import game.NetworkPlayer;
+import game.Player;
 import game.PonderLogic;
+import game.SpawnEvent;
+import game.TurnEvent;
+import network.Client;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
+import javax.swing.AbstractListModel;
 
 public class SwingGraphics {
 
 	private JFrame frame = new JFrame();
-	private JPanel[] players = new JPanel[4];					// Player name tags
+	private JPanel[] player_tags = new JPanel[4];					// Player name tags
 	private ImageIcon[][] theme = new ImageIcon[4][2];			// Current theme set
 	private JPanel gameHeader = new JPanel();					// Game header
 	private JButton[][] cells = new JButton[9][9];				// Tiles
@@ -33,68 +46,76 @@ public class SwingGraphics {
 	private boolean inSettings = false, inGameList = false, allow_local_input = true;
 	private JPanel settings = new JPanel(), gameList = new JPanel(), grid = new JPanel();		// grid??
 	
-	// TODO Alex
-	/*
-	 * Get Spawn Area to stack from the bottom for players 2 and 3
-	 * Set up a JAR build system for the artwork
-	 */
+	private LocalPlayer local;
+	private NetworkPlayer away;
+	private Player[] players;
 	
+	private Client client;
+	
+	public void setClientele(LocalPlayer loc, NetworkPlayer bud, Player[] cls) {
+		local = loc;
+		away = bud;
+		players = cls != null ? cls : new Player[]{ loc, loc, loc, loc };
+	}
+	
+	public Player getCurrentPlayer() {
+		return players[logic.getCurrPlayer()];
+	}
+	
+	public JFrame getFrame() {
+		return frame;
+	}
+
 	// TODO Grayson
 	/*
-	 * Work on artwork
-	 * Rework the PonderLogic API (it's getting slightly unruly)
-	 * 	Improve PonderLogic implementation (especially spawn logic)
+	 * Work on artwork (I'm changing this to be Thanksgiving week / end of Sprint 3)
+	 * Set up a JAR build system for the artwork
 	 */
 	
 	// TODO Game Logic
 	/*
-	 * No immediate backward jumps (This stuff needs events to work)
-	 * Undo moves
+	 * Add in grabbing and dropping flags (using shift/ctrl clicks)
 	 * Possible to spawn a piece and not be able to end turn (very rare)
 	 */
 	
 	// TODO Game Improvements
 	/*
 	 * Add a line showing move direction ???
-	 * Abstract the graphics and logic by having all communication done with events (?)
-	 */
-
-	// Sprint 2
-	/*
-	 * Event classes
-	 * Basic server-client communication within the main game
-	 * Server/Database improvements
-	 * Rewrite SwingGraphics and PonderLogic
 	 */
 
 	/**
 	 * Create the application.
 	 */
-	public SwingGraphics(PonderLogic instance) {
+	public SwingGraphics(PonderLogic instance, Client client) {
 		logic = instance;
+		this.client = client;
 		
-		ImageIcon piece = new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif"));
-		ImageIcon flag = new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"));
+		//URL resource = ClassLoader.getSystemResource("/art/circle.png");
+		//URL resource = ClassLoader.getSystemResource("art/circle.png");
 		
 		theme[0] = new ImageIcon[] {
-			piece,
-			flag
-			//piece_with_flag
+			//new ImageIcon(resource),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))
 		};
 		theme[1] = new ImageIcon[] {
-			piece,
-			flag
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))
 		};
 		theme[2] = new ImageIcon[] {
-			piece,
-			flag
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))
 		};
 		theme[3] = new ImageIcon[] {
-			piece,
-			flag		
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
+			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))		
 		};
 
 		initialize();
+	}
+	
+	public void displayVictor(int player) {
+		((JLabel)gameHeader.getComponent(0)).setText("Won by Player " + (logic.getCurrPlayer() + 1));
 	}
 	
 	/**
@@ -108,7 +129,7 @@ public class SwingGraphics {
 		
 		// Delete old pieces ?
 		
-		for (int i = 0; i != players.length; ++i)
+		for (int i = 0; i != player_tags.length; ++i)
 			setUpPieces(i);
 		
 		setUpFlags();
@@ -179,7 +200,9 @@ public class SwingGraphics {
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	private void initialize() {		
+		frame.setTitle("Ponder");
+		//frame.setIconImage(image);
 		frame.setResizable(false);
 		frame.setBounds(100, 100, 810, 640);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -194,6 +217,7 @@ public class SwingGraphics {
 				if(inGameList) {
 					closeGameList();
 				}
+				
 				if(inSettings) {
 					closeSettings();
 				} else {
@@ -227,16 +251,16 @@ public class SwingGraphics {
 		frame.getContentPane().add(btnGameList);
 
 		// Set Up Player Quadrants
-		for (int i = 0; i != players.length; ++i) {
-			players[i] = new JPanel();
-			players[i].setBounds(i < 2 ? 41 : 670, i % 2 == 0 ? 84 : 363, 89, 227);
-			players[i].setLayout(null);
+		for (int i = 0; i != player_tags.length; ++i) {
+			player_tags[i] = new JPanel();
+			player_tags[i].setBounds(i < 2 ? 41 : 670, i % 2 == 0 ? 84 : 363, 89, 227);
+			player_tags[i].setLayout(null);
 			
 			// Add player label
 			JLabel player_name = new JLabel("Player " + (i + 1));
 			player_name.setBounds(i < 2 ? 7 : 0, i % 2 == 0 ? 0 : 198, 82, 23);
 			if (i < 2) player_name.setHorizontalAlignment(SwingConstants.RIGHT);
-			players[i].add(player_name);
+			player_tags[i].add(player_name);
 			
 			// Add flag control icons
 			for (int j = 0; j != 4; ++j) {
@@ -247,34 +271,34 @@ public class SwingGraphics {
 				else
 					flag_icon.setBounds(0 + 22 * j, i % 2 == 0 ? 34 : 173, 20, 20);
 				
-				players[i].add(flag_icon);
+				player_tags[i].add(flag_icon);
 			}
 			
 			// Add Spawn Stack
 			// Waiting for work on spawn stack
 			
-			frame.getContentPane().add(players[i]);
+			frame.getContentPane().add(player_tags[i]);
 		}
 		
 		// Player "Spawn" stack
 		JPanel panel_1 = new JPanel();
 		panel_1.setBounds(34, 65, 55, 162);
-		players[0].add(panel_1);
+		player_tags[0].add(panel_1);
 		panel_1.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setBounds(34, 0, 55, 162);
-		players[1].add(panel_2);
+		player_tags[1].add(panel_2);
 		panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		JPanel panel_3 = new JPanel();
 		panel_3.setBounds(0, 65, 55, 162);
-		players[2].add(panel_3);
+		player_tags[2].add(panel_3);
 		panel_3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		JPanel panel_4 = new JPanel();
 		panel_4.setBounds(0, 0, 55, 162);
-		players[3].add(panel_4);
+		player_tags[3].add(panel_4);
 		panel_4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		// Spawn code
@@ -332,15 +356,7 @@ public class SwingGraphics {
 		
 		JLabel txtpnGameDataGoes = new JLabel();
 		txtpnGameDataGoes.setBounds(149, 31, 209, 20);
-		gameHeader.add(txtpnGameDataGoes);
-		
-		
-		// Settings window
-		settings.setVisible(false);;
-		settings.setBounds(150, 84, 500, 500);
-		frame.getContentPane().add(settings);
-		settings.setBackground(Color.WHITE);
-		settings.setLayout(new GridLayout(9, 9, 1, 1));
+		gameHeader.add(txtpnGameDataGoes);;
 		
 
 		// Game List window
@@ -348,7 +364,33 @@ public class SwingGraphics {
 		gameList.setBounds(150, 84, 500, 500);
 		frame.getContentPane().add(gameList);
 		gameList.setBackground(Color.WHITE);
-		gameList.setLayout(new GridLayout(9, 9, 1, 1));
+		gameList.setLayout(null);
+		
+		JList list = new JList();
+		list.setModel(new AbstractListModel() {
+			String[] values = new String[] {};
+			public int getSize() {
+				return values.length;
+			}
+			public Object getElementAt(int index) {
+				return values[index];
+			}
+		});
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.setBounds(499, 395, -498, -394);
+		gameList.add(list);
+		
+		JButton loadGame = new JButton("Load game");
+		loadGame.setBounds(80, 424, 107, 23);
+		gameList.add(loadGame);
+		
+		JButton createGame = new JButton("Create game");
+		createGame.setBounds(197, 424, 107, 23);
+		gameList.add(createGame);
+		
+		JButton btnJoinGame = new JButton("Join game");
+		btnJoinGame.setBounds(314, 424, 107, 23);
+		gameList.add(btnJoinGame);
 		
 		JPanel gameList = new JPanel();
 		gameList.setVisible(false);
@@ -356,6 +398,37 @@ public class SwingGraphics {
 		frame.getContentPane().add(gameList);
 		gameList.setBackground(Color.WHITE);
 		gameList.setLayout(new GridLayout(9, 9, 1, 1));
+		
+		
+		// Settings window
+		settings.setVisible(false);
+		settings.setBounds(150, 84, 500, 500);
+		frame.getContentPane().add(settings);
+		settings.setBackground(Color.WHITE);
+		
+		JButton newGame = new JButton("New Game");
+		newGame.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				self.reset();
+				self.closeSettings();
+				self.players[0] = self.players[1] = self.players[2] = self.players[3] = local;
+				self.logic.reset();
+				
+				self.color(Color.BLACK);
+				
+				panel_1.removeAll();
+				panel_2.removeAll();
+				panel_3.removeAll();
+				panel_4.removeAll();
+				panel_1.repaint();
+				panel_2.repaint();
+				panel_3.repaint();
+				panel_4.repaint();
+			}
+		});
+		settings.setLayout(null);
+		newGame.setBounds(110, 145, 307, 54);				// Don't know how to change it's appearance in the settings frame
+		settings.add(newGame);
 
 
 		// Mouse Labeling
@@ -400,18 +473,18 @@ public class SwingGraphics {
 					
 					public void mouseClicked(MouseEvent e) {
 						if (!allow_local_input) return;
-						
 						JButton src = (JButton)e.getSource();
 						
 						switch (e.getButton()) {
 							case MouseEvent.BUTTON1:			// LEFT-CLICK
+								// switch on shift and ctrl-click
+								
 								// Select contextual operations
 								switch (logic.click(src)) {
 									case PonderLogic.SPAWN_CLICK:
 										if (logic.spawn(src, logic.getCurrPlayer())) {
-											move(logic.getStack(), src);				// Spawn the piece
-											logic.setStack(null);
-											self.color(Color.BLACK);					// Remove the spawn highlighting
+											logic.addEvent(new SpawnEvent(logic.positionOf(src), logic.getCurrPlayer(), false));
+											runEvent(logic.lastEvent());
 										}
 										
 										break;
@@ -429,52 +502,51 @@ public class SwingGraphics {
 										
 										if (logic.canSlide(from, src)) {
 											if (logic.hasMoved(from) || !logic.canCapFlag(from, src)) return;		// Movement ended
+											logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), true, logic.flagsOn(from)));
 											
 										} else {
 											JButton jmpd = logic.jmpPiece(from, src);
 											
 											// If jumping a piece (doesn't care about hasMoved since you can't select a piece that has moved)
-											// Add in checks agains
-												// Jumping backwards
-												// Jumping after a slide
-											if (jmpd != null) {// && to != logic.getLastJump().from) {
-												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from))			// Despawn the piece
-													move(jmpd, getStack(logic.getPieceOwner(jmpd)));
+											if (jmpd != null) {
+												if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from)) {			// Despawn the piece
+													logic.addEvent(new SpawnEvent(logic.positionOf(jmpd), logic.getPieceOwner(jmpd), true));
+													runEvent(logic.lastEvent());
+												}
 												
-											} else
-												return;																// Movement ended
+												logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), false, logic.flagsOn(from)));
+												
+											} else				// Movement ended
+												return;
 
 										}
 
 										System.out.println("Moving");
-										logic.enterMovePhase();						// Prevent spawning actions from occurring
-										//logic.addMove(src);						// Add a move to the event feed (performed in move ???)
-										move(from, src);							// Perform the move
-
-										logic.setColor(src, Color.GREEN);
-										logic.select(src);							// Select the new tile (or null if no more movement)
+										runEvent(logic.lastEvent());
 										updateMouseText(src);						// Update text
 										
 										break;
 									default:
 										System.out.println("Defocusing");
-										logic.setColor(src, logic.getColor(src) == Color.BLACK ? Color.GREEN : Color.BLACK);
+										logic.setColor(src, Color.BLACK);
 										logic.select(null);
 								}
 								
 								break;
 							case MouseEvent.BUTTON2:			// MIDDLE-CLICK
-								JButton[][] adj = logic.adjacents(logic.positionOf(src));
+								int modifiers = e.getModifiers();
+								boolean shift = ((modifiers & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK);
+								boolean ctrl = ((modifiers & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK);
+								// Implement flag attach/drop using shift/ctrl-click
 								
-								for (JButton imm : adj[0])
-									if (imm != null) imm.setBackground(Color.YELLOW);
+								//for (int i = 0; i != 4; ++i) {
+									//logic.addEvent(new AttachEvent(logic.positionOf(src), i, false));
+								//}
 								
-								for (JButton nimm : adj[1])
-									if (nimm != null) nimm.setBackground(Color.MAGENTA);
-
 								break;
 								
 							case MouseEvent.BUTTON3:			// RIGHT-CLICK
+								undoEvent();
 								break;
 								
 							default:
@@ -550,12 +622,31 @@ public class SwingGraphics {
 	}
 	
 	/**
+	 * Get the current theming set
+	 * @return
+	 */
+	public ImageIcon[][] getTheme() {
+		return theme;
+	}
+	
+	public static java.awt.Image scaleImage(java.awt.Image srcImg, int w, int h){
+	    java.awt.image.BufferedImage resizedImg = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+	    java.awt.Graphics2D g2 = resizedImg.createGraphics();
+
+	    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+	    g2.drawImage(srcImg, 0, 0, w, h, null);
+	    g2.dispose();
+
+	    return resizedImg;
+	}
+	
+	/**
 	 * Get the given player's nametag
 	 * 
 	 * @param player
 	 */
 	public JLabel getLabel(int player) {
-		return (JLabel)players[player].getComponents()[0];
+		return (JLabel)player_tags[player].getComponents()[0];
 	}
 	
 	/**
@@ -574,7 +665,7 @@ public class SwingGraphics {
 	public JLabel[] getFlagIcons(int player) {
 		JLabel[] ret = new JLabel[4];
 		
-		Component[] subs = players[player].getComponents();
+		Component[] subs = player_tags[player].getComponents();
 		for (int i = 0; i != ret.length; ++i)
 			ret[i] = (JLabel)subs[i + 1];
 		
@@ -587,7 +678,7 @@ public class SwingGraphics {
 	 * @return
 	 */
 	public JPanel getStack(int player) {
-		return (JPanel)players[player].getComponents()[5];
+		return (JPanel)player_tags[player].getComponents()[5];
 	}
 
 	/**
@@ -673,13 +764,49 @@ public class SwingGraphics {
 	public void stopInput() {
 		allow_local_input = false;
 	}
-
-	// Placeholder for running non-local moves
+	
+	/**
+	 * Run the given event (game data and graphically) 
+	 * @param e
+	 */
 	public void runEvent(Event e) {
-		e.run();
+		if (e instanceof MoveEvent) {
+			MoveEvent event = (MoveEvent)e;
+			JButton src = logic.getPiece(event.to);
+			
+			logic.enterMovePhase();						// Prevent spawning actions from occurring
+			move(logic.getPiece(event.from), src);							// Perform the move
+
+			logic.setColor(src, Color.GREEN);
+			logic.select(src);
+			
+		} else if (e instanceof SpawnEvent) {
+			SpawnEvent event = (SpawnEvent)e;
+			
+			if (event.exiled) {
+				move(logic.getPiece(event.pos), getStack(event.owner));
+				
+			} else {
+				move(logic.getStack(), logic.getPiece(event.pos));				// Spawn the piece
+				logic.setStack(null);
+				color(Color.BLACK);
+			}
+		} else if (e instanceof TurnEvent) {
+			@SuppressWarnings("unused")
+			TurnEvent event = (TurnEvent)e;
+		}
 	}
 	
-	public void undoEvent(Event e) {
-		e.undo();
+	/**
+	 * Undo the last event
+	 * @param e
+	 */
+	public void undoEvent() {
+		boolean wasAcceptingInput = allow_local_input;
+		allow_local_input = false;
+		
+		logic.undoEvent(this);
+		
+		allow_local_input = wasAcceptingInput;
 	}
 }
