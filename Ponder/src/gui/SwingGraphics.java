@@ -1,11 +1,13 @@
 package gui;
 
 import java.awt.GridLayout;
+import java.awt.RenderingHints;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
 import java.util.Arrays;
 import java.awt.FlowLayout;
 
@@ -88,10 +90,13 @@ public class SwingGraphics {
 		logic = instance;
 		this.client = client;
 		
+		//URL resource = ClassLoader.getSystemResource("/art/circle.png");
+		//URL resource = ClassLoader.getSystemResource("art/circle.png");
+		
 		theme[0] = new ImageIcon[] {
+			//new ImageIcon(resource),
 			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
 			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))
-			//piece_with_flag
 		};
 		theme[1] = new ImageIcon[] {
 			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
@@ -622,6 +627,17 @@ public class SwingGraphics {
 	 */
 	public ImageIcon[][] getTheme() {
 		return theme;
+	}
+	
+	public static java.awt.Image scaleImage(java.awt.Image srcImg, int w, int h){
+	    java.awt.image.BufferedImage resizedImg = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+	    java.awt.Graphics2D g2 = resizedImg.createGraphics();
+
+	    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+	    g2.drawImage(srcImg, 0, 0, w, h, null);
+	    g2.dispose();
+
+	    return resizedImg;
 	}
 	
 	/**
