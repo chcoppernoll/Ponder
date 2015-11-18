@@ -1,12 +1,12 @@
 package game;
 
 public class EndTurnEvent implements Event {
-	public final int player;
-	
-	public EndTurnEvent(int player) {
+	public final String player;
+
+	public EndTurnEvent(String player) {
 		this.player = player;
 	}
-	
+
 	public void run() {
 
 	}

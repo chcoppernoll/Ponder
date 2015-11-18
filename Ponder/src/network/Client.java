@@ -13,8 +13,8 @@ import java.util.LinkedList;
 
 public class Client {
 	private Socket sock = null;
-	private final int port = 22222;
-	private final String IP = "";
+	private final int port = 7777;
+	private final String IP = "127.0.0.1";
 	private final String macAddress;
 	private final int getGameList = 0;
 	private final int getGame = 1;
@@ -24,10 +24,14 @@ public class Client {
 	private ObjectOutputStream out;
 	int currGameId;
 
+	public static void main(String[] args) {
+		Client cl = new Client();
+	}
+
 	public Client() {
 		macAddress = this.getMac();
 		this.connect();
-		this.loadGameList();
+		// this.loadGameList();
 	}
 
 	private String getMac() {
@@ -39,8 +43,6 @@ public class Client {
 			NetworkInterface network = NetworkInterface.getByInetAddress(ip);
 
 			byte[] mac = network.getHardwareAddress();
-
-			System.out.print("Current MAC address : ");
 
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < mac.length; i++) {
@@ -62,10 +64,13 @@ public class Client {
 	private void connect() {
 		try {
 			sock = new Socket(IP, port);
-			in = new ObjectInputStream(sock.getInputStream());
+			System.out.println("Accepted");
+			System.out.flush();
 			out = new ObjectOutputStream(sock.getOutputStream());
+			out.flush();
+			in = new ObjectInputStream(sock.getInputStream());
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 	}
 

@@ -31,8 +31,9 @@ public class ConnectionHandler implements Runnable {
 	public ConnectionHandler(Socket sock) {
 		try {
 			this.sock = sock;
-			in = new ObjectInputStream(sock.getInputStream());
 			out = new ObjectOutputStream(sock.getOutputStream());
+			out.flush();
+			in = new ObjectInputStream(sock.getInputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -42,46 +43,53 @@ public class ConnectionHandler implements Runnable {
 	@Override
 	public void run() {
 		try {
-			con = DriverManager
-					.getConnection("jdbc:mysql://71.13.212.62:3306/ponder");
+			con = DriverManager.getConnection(
+					"jdbc:mysql://71.13.212.62:3306/ponder", "Ponder",
+					"CS3141R02");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		try {
-			while (!sock.isClosed()) {
-				if (in.available() > 0) {
-					CommunicationObject comm = (CommunicationObject) in
-							.readObject();
+		int iter = 0;
+		final int runTo = 300;
+		while (!sock.isClosed() && iter < runTo) {
 
-					switch (comm.getAction()) {
-					case 0:
-						this.getGameList(comm);
-						break;
-					case 1:
-						this.loadGame(comm);
+			try {
+				Thread.sleep(1000);
+				CommunicationObject comm = (CommunicationObject) in
+						.readObject();
+				switch (comm.getAction()) {
+				case 0:
+					this.getGameList(comm);
+					break;
+				case 1:
+					this.loadGame(comm);
 
-						break; // Save moves
-					case 2:
-						this.addMoves(comm);
-						break; // Load game state
-					case 3:
-						this.createGame(comm);
-						break;
-					default:
-						break;
-					}
+					break; // Save moves
+				case 2:
+					this.addMoves(comm);
+					break; // Load game state
+				case 3:
+					this.createGame(comm);
+					break;
+				default:
+					break;
 				}
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+				iter = 0;
 
+			} catch (IOException e) {
+				iter++;
+				continue;
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
 	}
 
 	private int getGameList(CommunicationObject comm) {
@@ -95,6 +103,7 @@ public class ConnectionHandler implements Runnable {
 			comm.setGameIds(gameIds);
 			out.writeObject(comm);
 		} catch (IOException e) {
+			e.printStackTrace();
 			return 1;
 		} catch (SQLException e) {
 			e.printStackTrace();

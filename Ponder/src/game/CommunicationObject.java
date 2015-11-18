@@ -1,10 +1,12 @@
 package game;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class CommunicationObject {
+public class CommunicationObject implements Serializable {
 
+	private static final long serialVersionUID = -1;
 	private LinkedList<Event> moves;
 	private int action;
 	private int gameId;
