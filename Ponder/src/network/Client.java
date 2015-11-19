@@ -14,7 +14,7 @@ import java.util.LinkedList;
 public class Client {
 	private Socket sock = null;
 	private final int port = 7777;
-	private final String IP = "127.0.0.1";
+	private final String IP = "141.219.152.71";
 	private final String macAddress;
 	private final int getGameList = 0;
 	private final int getGame = 1;
@@ -122,8 +122,15 @@ public class Client {
 		return null;
 	}
 
-	public void addMoves() {
-
+	public void addMoves(LinkedList<Event> moves) {
+		CommunicationObject comm = new CommunicationObject(this.addMoves,
+				this.currGameId, this.macAddress);
+		comm.setMoves(moves);
+		try {
+			out.writeObject(comm);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public LinkedList<Event> getGame() {
