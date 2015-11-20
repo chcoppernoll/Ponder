@@ -77,12 +77,12 @@ public class Ponder {
 				// wait for the player to finish their turn
 				while (logic.getCurrPlayer() != -1 && !window.loaded() && !curr.turnOver(window, net))
 					try{
-						//for (Player p : window.getPlayers()) {
-							//System.out.print(p instanceof LocalPlayer);
-							//System.out.print(" ");
-						//}
+						for (Player p : window.getPlayers()) {
+							System.out.print(p instanceof LocalPlayer);
+							System.out.print(" ");
+						}
 							
-						//System.out.println("");
+						System.out.println("");
 						Thread.sleep(500);
 					} catch (Exception e) {}
 				
