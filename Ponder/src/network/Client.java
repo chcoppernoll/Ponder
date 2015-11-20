@@ -25,6 +25,7 @@ public class Client {
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 	int currGameId;
+	int playerid;
 
 	public Client() {
 		currGameId = -1;
@@ -169,10 +170,12 @@ public class Client {
 	public LinkedList<Event> getGame(int gameId) {
 		this.currGameId = gameId;
 		CommunicationObject commOut = new CommunicationObject(this.getGame, gameId, this.macAddress);
+		
 
 		try {
 			out.writeObject(commOut);
 			CommunicationObject commIn = (CommunicationObject) in.readObject();
+			playerid = commIn.getPlayerid();
 			return commIn.getMoves();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -182,5 +185,9 @@ public class Client {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public int getMyID(){
+		return playerid;
 	}
 }

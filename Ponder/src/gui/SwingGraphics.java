@@ -94,9 +94,10 @@ public class SwingGraphics {
 		for(Event event : turns)
 			runEvent(event);
 		
-		logic.select(null);
 		setLoaded(true);
+		System.out.println(client.getMyID());
 		// Assign the local player to the array
+		
 	}
 	
 	public boolean loaded() {
@@ -837,6 +838,7 @@ public class SwingGraphics {
 			}
 		} else if (e instanceof TurnEvent) {
 			logic.nextTurn();
+			logic.select(null);
 			//TurnEvent event = (TurnEvent)e;
 			//System.out.println("Turn event processed");
 		}

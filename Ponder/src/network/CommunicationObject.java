@@ -13,6 +13,15 @@ public class CommunicationObject implements Serializable {
 	@SuppressWarnings("unused")
 	private String mac;
 	private ArrayList<Integer> gameIds;
+	private int playerid;
+
+	public int getPlayerid() {
+		return playerid;
+	}
+
+	public void setPlayerid(int playerid) {
+		this.playerid = playerid;
+	}
 
 	public CommunicationObject(int action, int gameId, String mac) {
 		this.action = action;
