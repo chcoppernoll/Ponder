@@ -77,11 +77,19 @@ public class NetworkPlayer implements Player {
 	public boolean turnOver(SwingGraphics graphics, Client net) {
 		LinkedList<Event> tmp = net.getGame();
 		
+		System.out.println("Checking for Updates");
+		
 		// Hackish solution. Have to do for now
 		if (tmp.size() != old.size()) {
 			int o_siz = old.size();
+			move = new LinkedList<>();
+			
 			for (; o_siz != tmp.size(); ++o_siz)
-				move.add(tmp.get(o_siz));
+				if(tmp.get(o_siz)!= null){
+					move.add(tmp.get(o_siz));
+				}else{
+					System.out.println("Object is null");
+				}
 		}
 		
 		//if (net.hasGameUpdate(graphics.getLogic().getCurrTurn()))

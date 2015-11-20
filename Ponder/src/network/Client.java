@@ -168,8 +168,7 @@ public class Client {
 	 */
 	public LinkedList<Event> getGame(int gameId) {
 		this.currGameId = gameId;
-		CommunicationObject commOut = new CommunicationObject(this.getGame,
-				gameId, this.macAddress);
+		CommunicationObject commOut = new CommunicationObject(this.getGame, gameId, this.macAddress);
 
 		try {
 			out.writeObject(commOut);
