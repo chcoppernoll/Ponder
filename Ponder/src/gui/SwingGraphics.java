@@ -94,6 +94,7 @@ public class SwingGraphics {
 		for(Event event : turns)
 			runEvent(event);
 		
+		logic.select(null);
 		setLoaded(true);
 		// Assign the local player to the array
 	}

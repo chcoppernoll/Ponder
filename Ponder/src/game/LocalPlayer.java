@@ -22,7 +22,6 @@ public class LocalPlayer implements Player {
 	 * Polymorphic method for the end of a player's turn
 	 */
 	public void onTurnEnd(SwingGraphics graphics, Client net) {
-		graphics.stopInput();
 		graphics.color(Color.BLACK);
 		
 		PonderLogic logic = graphics.getLogic();

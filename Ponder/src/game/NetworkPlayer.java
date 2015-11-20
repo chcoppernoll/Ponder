@@ -30,6 +30,7 @@ public class NetworkPlayer implements Player {
 	 * Polymorphic method for the beginning of a player's turn
 	 */
 	public void onTurnStart(SwingGraphics graphics, Client net) {
+		graphics.stopInput();
 		old = net.getGame();
 		move = null;
 	}
