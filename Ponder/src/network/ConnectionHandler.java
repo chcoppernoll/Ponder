@@ -148,23 +148,8 @@ public class ConnectionHandler implements Runnable {
 		LinkedList<Event> moves = new LinkedList<Event>();
 		try {
 			while (results.next()) {
-				
-				if (results.getBoolean("Exiled") == true) {
-					// Spawn event
-					int playerId = results.getInt("Player_id");
-					int x = results.getInt("At_Pos_X");
-					int y = results.getInt("At_Pos_Y");
-					boolean exiled = results.getBoolean("Exiled");
-					SpawnEvent spawn = new SpawnEvent(new Position(x, y),
-							playerId, exiled);
-					moves.addLast(spawn);
-				} else if ( results.getBoolean("End_Of_Turn") == true) {
-					// End of turn event.
-					int playerId = results.getInt("Player_id");
-					EndTurnEvent end = new EndTurnEvent(playerId);
-					moves.addLast(end);
-				} else {
-					// Move event
+				results.getInt("To_Pos_X");
+				if (!results.wasNull()) {
 					int at_x = results.getInt("At_Pos_X");
 					int at_y = results.getInt("At_Pos_Y");
 					int to_x = results.getInt("To_Pos_X");
@@ -174,14 +159,32 @@ public class ConnectionHandler implements Runnable {
 							new Position(to_x, to_y));
 
 					moves.addLast(move);
+				} else if (results.getString("End_Of_Turn") != null
+						&& results.getString("End_Of_Turn").charAt(0) == 'T') {
+					// End of turn event.
+					int playerId = results.getInt("Player_id");
+					EndTurnEvent end = new EndTurnEvent(playerId);
+					moves.addLast(end);
+				} else {
+					int playerId = results.getInt("Player_id");
+					int x = results.getInt("At_Pos_X");
+					int y = results.getInt("At_Pos_Y");
+					boolean exiled = false;
+					if (results.getString("Exiled") != null
+							&& results.getString("Exiled").charAt(0) == 'T') {
+						exiled = true;
+					}
+					SpawnEvent spawn = new SpawnEvent(new Position(x, y),
+							playerId, exiled);
+					moves.addLast(spawn);
 				}
 
-				comm.setMoves(moves);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		comm.setMoves(moves);
 		return comm;
 	}
 
@@ -192,38 +195,42 @@ public class ConnectionHandler implements Runnable {
 				PreparedStatement prep = null;
 				if (event instanceof SpawnEvent) {
 					prep = con.prepareStatement(this.insert);
-					prep.setInt(1, 0); // TODO change to game id
+					prep.setInt(1, comm.getGameId()); // TODO change to game id
 					prep.setShort(2, (short) 0); // TODO change to player id
 					prep.setShort(3, (short) ((SpawnEvent) event).pos.x);
 					prep.setShort(4, (short) ((SpawnEvent) event).pos.y);
 					prep.setNull(5, java.sql.Types.SMALLINT);
 					prep.setNull(6, java.sql.Types.SMALLINT);
-					prep.setBoolean(7, ((SpawnEvent) event).exiled);
-					prep.setNull(8, java.sql.Types.BOOLEAN);
+					prep.setString(7, String
+							.valueOf(((SpawnEvent) event).exiled ? 'T' : 'F'));
+					prep.setNull(8, java.sql.Types.CHAR);
+					prep.executeUpdate();
 				}
 
 				else if (event instanceof MoveEvent) {
 					prep = con.prepareStatement(insert);
-					prep.setInt(1, 0); // TODO change to game id
+					prep.setInt(1, comm.getGameId()); // TODO change to game id
 					prep.setNull(2, java.sql.Types.SMALLINT);// TODO player id
 					prep.setShort(3, (short) ((MoveEvent) event).from.x);
 					prep.setShort(4, (short) ((MoveEvent) event).from.y);
 					prep.setShort(5, (short) ((MoveEvent) event).to.x);
 					prep.setShort(6, (short) ((MoveEvent) event).to.y);
-					prep.setNull(7, java.sql.Types.BOOLEAN);
-					prep.setNull(8, java.sql.Types.BOOLEAN);
+					prep.setNull(7, java.sql.Types.CHAR);
+					prep.setNull(8, java.sql.Types.CHAR);
+					prep.executeUpdate();
 				}
 
 				else if (event instanceof EndTurnEvent) {
 					prep = con.prepareStatement(insert);
-					prep.setInt(1, 0); // TODO change to game id
+					prep.setInt(1, comm.getGameId()); // TODO change to game id
 					prep.setShort(2, (short) 0); // TODO Player id
 					prep.setNull(3, java.sql.Types.SMALLINT);
 					prep.setNull(4, java.sql.Types.SMALLINT);
 					prep.setNull(5, java.sql.Types.SMALLINT);
 					prep.setNull(6, java.sql.Types.SMALLINT);
-					prep.setNull(7, java.sql.Types.BOOLEAN);
-					prep.setBoolean(8, true);
+					prep.setNull(7, java.sql.Types.CHAR);
+					prep.setString(8, String.valueOf('T'));
+					prep.executeUpdate();
 				}
 			}
 		} catch (SQLException e) {
