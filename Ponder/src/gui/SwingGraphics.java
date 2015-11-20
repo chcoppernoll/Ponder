@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -52,6 +53,8 @@ public class SwingGraphics {
 	private Player[] players;
 	
 	private Client client;
+	
+	DefaultListModel listModel;
 	
 	/**
 	 * Initialize the game players
@@ -99,17 +102,6 @@ public class SwingGraphics {
 		// Set player array correctly
 		
 	}
-
-	// TODO Game Logic
-	/*
-	 * Add in grabbing and dropping flags (using shift/ctrl clicks)
-	 * Possible to spawn a piece and not be able to end turn (very rare)
-	 */
-	
-	// TODO Game Improvements
-	/*
-	 * Add a line showing move direction ???
-	 */
 
 	/**
 	 * Create the application.
@@ -409,8 +401,8 @@ public class SwingGraphics {
 		JScrollPane scrollPane = new JScrollPane();
 		gameList.add(scrollPane);
 		
-		DefaultListModel listModel = new DefaultListModel();
-		listModel.addElement("Hello World!");
+		listModel = new DefaultListModel();
+		updateGameList();
 		// Game Browser
 		JList list = new JList();
 		list.setModel(listModel);
@@ -422,7 +414,7 @@ public class SwingGraphics {
 		JButton btnCreateGame = new JButton("Create game");
 		btnCreateGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Create game listener
+				client.createGame();
 			}
 		});
 		panel.add(btnCreateGame);
@@ -431,7 +423,7 @@ public class SwingGraphics {
 		JButton btnJoinGame = new JButton("Join game");
 		btnJoinGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Join game listener
+				//TODO join game button
 			}
 		});
 		panel.add(btnJoinGame);
@@ -439,7 +431,7 @@ public class SwingGraphics {
 		JButton btnLoadGame = new JButton("Load game");
 		btnLoadGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Load game listener
+				//TODO Load game listener
 			}
 		});
 		panel.add(btnLoadGame);
@@ -858,5 +850,12 @@ public class SwingGraphics {
 		logic.undoEvent(this);
 		
 		allow_local_input = wasAcceptingInput;
+	}
+	
+	public void updateGameList() {
+		ArrayList<Integer> gameList = client.loadGameList();
+		for(Integer game : gameList) {
+			listModel.addElement(game);
+		}
 	}
 }
