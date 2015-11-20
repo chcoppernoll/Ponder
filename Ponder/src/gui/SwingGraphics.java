@@ -91,16 +91,13 @@ public class SwingGraphics {
 		logic.reset();
 		logic.nextTurn();
 		
-		if (!turns.isEmpty())
-			turns.removeLast();
-
 		for(Event event : turns)
 			runEvent(event);
 		
 		setLoaded(true);
+		System.out.println(client.getMyID());
 		players[client.getMyID() - 1] = local;
 		// Assign the local player to the array
-		players[client.getMyID() - 1] = local;
 		
 	}
 	

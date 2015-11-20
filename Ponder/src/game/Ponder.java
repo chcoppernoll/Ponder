@@ -67,7 +67,8 @@ public class Ponder {
 		
 		while (true) {
 			while (logic.victor() == -1) {
-				logic.nextTurn();
+				if (!window.loaded())
+					logic.nextTurn();
 				window.setLoaded(false);
 
 				Player curr = window.getCurrentPlayer();
