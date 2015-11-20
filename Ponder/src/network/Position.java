@@ -1,7 +1,14 @@
 package network;
 
-public class Position {
+import java.io.Serializable;
+
+public class Position implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 489515123849939914L;
 	public final int x, y;
+	
 
 	public Position(int _x, int _y) {
 		x = _x;

@@ -24,7 +24,7 @@ public class Server {
 			System.out.println(input);
 
 		}
-
+		read.close();
 		create.terminate();
 	}
 }

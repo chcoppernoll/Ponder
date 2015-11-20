@@ -148,7 +148,8 @@ public class ConnectionHandler implements Runnable {
 		LinkedList<Event> moves = new LinkedList<Event>();
 		try {
 			while (results.next()) {
-				if (((Boolean) results.getBoolean("Exiled")) != null) {
+				
+				if (results.getBoolean("Exiled") == true) {
 					// Spawn event
 					int playerId = results.getInt("Player_id");
 					int x = results.getInt("At_Pos_X");
@@ -157,7 +158,7 @@ public class ConnectionHandler implements Runnable {
 					SpawnEvent spawn = new SpawnEvent(new Position(x, y),
 							playerId, exiled);
 					moves.addLast(spawn);
-				} else if (((Boolean) results.getBoolean("End_Of_Turn")) != null) {
+				} else if ( results.getBoolean("End_Of_Turn") == true) {
 					// End of turn event.
 					int playerId = results.getInt("Player_id");
 					EndTurnEvent end = new EndTurnEvent(playerId);

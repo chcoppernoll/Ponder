@@ -10,6 +10,7 @@ public class CommunicationObject implements Serializable {
 	private LinkedList<Event> moves;
 	private int action;
 	private int gameId;
+	@SuppressWarnings("unused")
 	private String mac;
 	private ArrayList<Integer> gameIds;
 

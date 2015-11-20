@@ -1,6 +1,15 @@
 package network;
 
 public class EndTurnEvent implements Event {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6103652760997412303L;
+	@Override
+	public String toString() {
+		return "EndTurnEvent [player=" + player + "]";
+	}
+
 	public final int player;
 	
 	public EndTurnEvent(int player) {

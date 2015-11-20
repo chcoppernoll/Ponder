@@ -14,7 +14,7 @@ import java.util.LinkedList;
 public class Client {
 	private Socket sock = null;
 	private final int port = 7777;
-	private final String IP = "141.219.152.71";
+	private final String IP = "141.219.214.24";
 	private final String macAddress;
 	private final int getGameList = 0;
 	private final int getGame = 1;
@@ -24,14 +24,10 @@ public class Client {
 	private ObjectOutputStream out;
 	int currGameId;
 
-	public static void main(String[] args) {
-		Client cl = new Client();
-	}
-
 	public Client() {
+		currGameId = -1;
 		macAddress = this.getMac();
 		this.connect();
-		// this.loadGameList();
 	}
 
 	private String getMac() {
@@ -65,7 +61,6 @@ public class Client {
 		try {
 			sock = new Socket(IP, port);
 			System.out.println("Accepted");
-			System.out.flush();
 			out = new ObjectOutputStream(sock.getOutputStream());
 			out.flush();
 			in = new ObjectInputStream(sock.getInputStream());
@@ -84,14 +79,18 @@ public class Client {
 		return 0;
 	}
 
+	/**
+	 * Creates a new game in the database.
+	 * 
+	 * @return Returns an ArrayList of Integers, corresponding to the 
+	 * list of game ids.
+	 */
 	public ArrayList<Integer> createGame() {
-
+		
 		try {
 			CommunicationObject commOut = new CommunicationObject(
 					this.createGame, -1, this.macAddress);
 			out.writeObject(commOut);
-			while (in.available() <= 0) {
-			}
 			CommunicationObject commIn = (CommunicationObject) in.readObject();
 			return commIn.getGameIds();
 		} catch (IOException e) {
@@ -103,7 +102,13 @@ public class Client {
 		}
 		return null;
 	}
-
+	
+	/**
+	 * Loads the list of games.
+	 * 
+	 * @return Returns an ArrayList of Integers, corresponding to the 
+	 * list of game ids.
+	 */
 	public ArrayList<Integer> loadGameList() {
 		try {
 			CommunicationObject commOut = new CommunicationObject(
@@ -122,7 +127,13 @@ public class Client {
 		return null;
 	}
 
+	/**
+	 * Adds new moves into the database. Used to update the game.
+	 * 
+	 * @param moves The arraylist of moves.
+	 */
 	public void addMoves(LinkedList<Event> moves) {
+		//System.out.println(currGameId);
 		CommunicationObject comm = new CommunicationObject(this.addMoves,
 				this.currGameId, this.macAddress);
 		comm.setMoves(moves);
@@ -133,10 +144,26 @@ public class Client {
 		}
 	}
 
-	public LinkedList<Event> getGame() {
-		return this.getGame(currGameId);
+	/**
+	 * Loads the currently selected game.
+	 * @return Returns a linked list of events pertaining to the game.
+	 */
+	public LinkedList<Event> getGame() throws NullPointerException{
+		if(currGameId != -1){
+			return this.getGame(currGameId);
+		}
+		else{
+			throw new NullPointerException("No game has been selected.");
+		}
 	}
 
+	/**
+	 * Loads a game using the gameId parameter, then sets the current game
+	 * to the gameId.
+	 * 
+	 * @param gameId
+	 * @return Returns a linked list of events pertaining to the game.
+	 */
 	public LinkedList<Event> getGame(int gameId) {
 		this.currGameId = gameId;
 		CommunicationObject commOut = new CommunicationObject(this.getGame,
