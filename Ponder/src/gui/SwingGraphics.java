@@ -11,6 +11,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -55,6 +56,7 @@ public class SwingGraphics {
 	private Client client;
 	
 	DefaultListModel listModel;
+	JList list;
 	
 	/**
 	 * Initialize the game players
@@ -80,27 +82,13 @@ public class SwingGraphics {
 		return frame;
 	}
 	
-	private void loadGame() {
+	private void loadGame(LinkedList<Event> turns) {
 		players[0] = players[1] = players[2] = players[3] = away;
 		logic.reset();
 		
-		// Play seen events
-		for (int i = 0; i != 10; ++i) {
-			logic.nextTurn();
-			Player p = getCurrentPlayer();
-			
-			p.onTurnStart(this, client);
-			
-			while (!p.turnOver(this, client))
-				try {
-					Thread.sleep(500);
-				} catch(Exception e){};
-				
-			p.onTurnEnd(this, client);
+		for(Event event : turns) {
+			runEvent(event);
 		}
-		
-		// Set player array correctly
-		
 	}
 
 	/**
@@ -404,7 +392,7 @@ public class SwingGraphics {
 		listModel = new DefaultListModel();
 		updateGameList();
 		// Game Browser
-		JList list = new JList();
+		list = new JList();
 		list.setModel(listModel);
 		scrollPane.setViewportView(list);
 		
@@ -431,7 +419,7 @@ public class SwingGraphics {
 		JButton btnLoadGame = new JButton("Load game");
 		btnLoadGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//TODO Load game listener
+				loadGame(client.getGame(list.getSelectedIndex()));
 			}
 		});
 		panel.add(btnLoadGame);
