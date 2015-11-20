@@ -95,7 +95,7 @@ public class SwingGraphics {
 			runEvent(event);
 		
 		setLoaded(true);
-		System.out.println(client.getMyID());
+		players[client.getMyID() - 1] = local;
 		// Assign the local player to the array
 		
 	}
@@ -212,6 +212,7 @@ public class SwingGraphics {
 	 * Open the game browser
 	 */
 	private void openGameList() {
+		updateGameList();
 		grid.setVisible(false);
 		gameList.setVisible(true);
 		inGameList = true;
@@ -858,6 +859,7 @@ public class SwingGraphics {
 	}
 	
 	public void updateGameList() {
+		listModel.clear();
 		ArrayList<Integer> gameList = client.loadGameList();
 		for(Integer game : gameList) {
 			listModel.addElement(game);
