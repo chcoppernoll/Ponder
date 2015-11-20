@@ -16,6 +16,11 @@ import network.Client;
  */
 
 public class Ponder {
+	
+	/**
+	 * Set up the graphical icons for the game
+	 * @param window
+	 */
 	public static void initGraphics(final SwingGraphics window) {
 		ImageIcon[][] theme = window.getTheme();
 		int w = 55, h = 55;
@@ -68,11 +73,10 @@ public class Ponder {
 				curr.onTurnStart(window, net);
 
 				// wait for the player to finish their turn
-				while (logic.getCurrPlayer() != -1 && !curr.turnOver(window, net)) {	// Network communication/Event loading is handled within NetworkPlayer.turnOver
-					// Have some network communication in here ???
-					boolean tmp = curr.turnOver(window, net);
-					System.out.print(tmp ? "" : ""); // The program never exits this loop without this statement
-				}
+				while (logic.getCurrPlayer() != -1 && !curr.turnOver(window, net))
+					try{
+						Thread.sleep(500);
+					} catch (Exception e) {}
 				
 				if (logic.getCurrPlayer() != -1) curr.onTurnEnd(window, net);
 			}
@@ -80,7 +84,10 @@ public class Ponder {
 			window.displayVictor(logic.getCurrPlayer() + 1);
 			
 			// Pause before clearing board and starting new game
-			while (logic.getCurrPlayer() != -1) System.out.println("");					// Println necessary to provide time for concurrent communication
+			while (logic.getCurrPlayer() != -1)
+				try {
+					Thread.sleep(500);
+				} catch (Exception e){}
 		}
 	}
 }

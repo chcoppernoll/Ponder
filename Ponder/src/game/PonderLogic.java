@@ -129,6 +129,9 @@ public class PonderLogic implements GameLogic<JButton> {
 		return new Position(cell.getX() / 55, cell.getY() / 55);
 	}
 	
+	/**
+	 * Create a new position object with the given coordinates
+	 */
 	public Position makePosition(int x, int y) {
 		return new Position(x, y);
 	}
@@ -312,15 +315,23 @@ public class PonderLogic implements GameLogic<JButton> {
 		return false;
 	}
 	
+	/**
+	 * Get the current player's available mana
+	 */
 	public double getMana() {
 		return mana;
 	}
 	
-	//graphics help
+	/**
+	 * Get the graphical color of the given cell
+	 */
 	public Color getColor(JButton cell) {
 		return data.get(cell).color;
 	}
 	
+	/**
+	 * Set the graphical color of the given cell
+	 */
 	public void setColor(JButton cell, Color color) {
 		cell.setBackground(data.get(cell).color = color);
 	}
@@ -356,8 +367,6 @@ public class PonderLogic implements GameLogic<JButton> {
 		return flags;
 	}
 	
-	
-	// Workspace methods
 	/**
 	 * Returns whether the selected piece is capable of moving
 	 */
@@ -421,9 +430,7 @@ public class PonderLogic implements GameLogic<JButton> {
 				return true;										// One of the flags must be the players
 		}
 	}
-	
-	// Non-workspace
-	
+		
 	/**
 	 * Checks whether a piece has moved already
 	 */
@@ -567,6 +574,9 @@ public class PonderLogic implements GameLogic<JButton> {
 		return curr_move;
 	}
 	
+	/**
+	 * Clear the event queue
+	 */
 	public void clearEvents() {
 		curr_move.clear();
 	}

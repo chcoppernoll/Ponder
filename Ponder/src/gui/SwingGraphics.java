@@ -58,12 +58,22 @@ public class SwingGraphics {
 	
 	private Client client;
 	
+	/**
+	 * Initialize the game players
+	 * @param loc
+	 * @param bud
+	 * @param cls
+	 */
 	public void setClientele(LocalPlayer loc, NetworkPlayer bud, Player[] cls) {
 		local = loc;
 		away = bud;
 		players = cls != null ? cls : new Player[]{ loc, loc, loc, loc };
 	}
 	
+	/**
+	 * Get the current player for use in the game loop
+	 * @return
+	 */
 	public Player getCurrentPlayer() {
 		return players[logic.getCurrPlayer()];
 	}
@@ -71,13 +81,30 @@ public class SwingGraphics {
 	public JFrame getFrame() {
 		return frame;
 	}
-
-	// TODO Grayson
-	/*
-	 * Work on artwork (I'm changing this to be Thanksgiving week / end of Sprint 3)
-	 * Set up a JAR build system for the artwork
-	 */
 	
+	private void loadGame() {
+		players[0] = players[1] = players[2] = players[3] = away;
+		logic.reset();
+		
+		// Play seen events
+		for (int i = 0; i != 10; ++i) {
+			logic.nextTurn();
+			Player p = getCurrentPlayer();
+			
+			p.onTurnStart(this, client);
+			
+			while (!p.turnOver(this, client))
+				try {
+					Thread.sleep(500);
+				} catch(Exception e){};
+				
+			p.onTurnEnd(this, client);
+		}
+		
+		// Set player array correctly
+		
+	}
+
 	// TODO Game Logic
 	/*
 	 * Add in grabbing and dropping flags (using shift/ctrl clicks)
@@ -120,6 +147,10 @@ public class SwingGraphics {
 		initialize();
 	}
 	
+	/**
+	 * Change the game header to show the winner
+	 * @param player
+	 */
 	public void displayVictor(int player) {
 		((JLabel)gameHeader.getComponent(0)).setText("Won by Player " + (logic.getCurrPlayer() + 1));
 	}
@@ -141,6 +172,10 @@ public class SwingGraphics {
 		setUpFlags();
 	}
 
+	/**
+	 * Start displaying the game
+	 * @param vis
+	 */
 	public void setVisible(boolean vis) {
 		frame.setVisible(vis);
 	}
@@ -381,6 +416,7 @@ public class SwingGraphics {
 		
 		DefaultListModel listModel = new DefaultListModel();
 		listModel.addElement("Hello World!");
+		// Game Browser
 		JList list = new JList();
 		list.setModel(listModel);
 		scrollPane.setViewportView(list);
@@ -396,6 +432,7 @@ public class SwingGraphics {
 		});
 		panel.add(btnCreateGame);
 		
+		// Join game Button
 		JButton btnJoinGame = new JButton("Join game");
 		btnJoinGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -639,6 +676,14 @@ public class SwingGraphics {
 		return theme;
 	}
 	
+	/**
+	 * Scales an image to fit within a box of size WxH
+	 * 
+	 * @param srcImg
+	 * @param w
+	 * @param h
+	 * @return
+	 */
 	public static java.awt.Image scaleImage(java.awt.Image srcImg, int w, int h){
 	    java.awt.image.BufferedImage resizedImg = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
 	    java.awt.Graphics2D g2 = resizedImg.createGraphics();
