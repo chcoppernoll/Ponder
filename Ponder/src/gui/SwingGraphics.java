@@ -48,6 +48,7 @@ public class SwingGraphics {
 	
 	private boolean inSettings = false, inGameList = false, allow_local_input = true;
 	private JPanel settings = new JPanel(), gameList = new JPanel(), grid = new JPanel();		// grid??
+	private JPanel panel_1 = new JPanel(), panel_2 = new JPanel(), panel_3 = new JPanel(), panel_4 = new JPanel();
 	
 	private LocalPlayer local;
 	private NetworkPlayer away;
@@ -83,6 +84,8 @@ public class SwingGraphics {
 	}
 	
 	private void loadGame(LinkedList<Event> turns) {
+		refresh();
+		
 		players[0] = players[1] = players[2] = players[3] = away;
 		logic.reset();
 		logic.nextTurn();
@@ -210,6 +213,24 @@ public class SwingGraphics {
 		gameList.setVisible(false);
 		inGameList = false;
 	}
+	
+	private void refresh() {
+		reset();
+		closeSettings();
+		players[0] = players[1] = players[2] = players[3] = local;
+		logic.reset();
+		
+		color(Color.BLACK);
+		
+		panel_1.removeAll();
+		panel_2.removeAll();
+		panel_3.removeAll();
+		panel_4.removeAll();
+		panel_1.repaint();
+		panel_2.repaint();
+		panel_3.repaint();
+		panel_4.repaint();
+	}
 
 	/**
 	 * Initialize the contents of the frame.
@@ -294,22 +315,18 @@ public class SwingGraphics {
 		}
 		
 		// Player "Spawn" stack
-		JPanel panel_1 = new JPanel();
 		panel_1.setBounds(34, 65, 55, 162);
 		player_tags[0].add(panel_1);
 		panel_1.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
-		JPanel panel_2 = new JPanel();
 		panel_2.setBounds(34, 0, 55, 162);
 		player_tags[1].add(panel_2);
 		panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
-		JPanel panel_3 = new JPanel();
 		panel_3.setBounds(0, 65, 55, 162);
 		player_tags[2].add(panel_3);
 		panel_3.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		JPanel panel_4 = new JPanel();
 		panel_4.setBounds(0, 0, 55, 162);
 		player_tags[3].add(panel_4);
 		panel_4.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -417,7 +434,7 @@ public class SwingGraphics {
 		JButton btnLoadGame = new JButton("Load game");
 		btnLoadGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+			
 				loadGame(client.getGame(list.getSelectedIndex()));
 				closeGameList();
 			}
@@ -432,21 +449,22 @@ public class SwingGraphics {
 		JButton newGame = new JButton("New Game");
 		newGame.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				self.reset();
-				self.closeSettings();
-				self.players[0] = self.players[1] = self.players[2] = self.players[3] = local;
-				self.logic.reset();
+				//self.reset();
+				//self.closeSettings();
+				//self.players[0] = self.players[1] = self.players[2] = self.players[3] = local;
+				//self.logic.reset();
 				
-				self.color(Color.BLACK);
+				//self.color(Color.BLACK);
 				
-				panel_1.removeAll();
-				panel_2.removeAll();
-				panel_3.removeAll();
-				panel_4.removeAll();
-				panel_1.repaint();
-				panel_2.repaint();
-				panel_3.repaint();
-				panel_4.repaint();
+				//panel_1.removeAll();
+				//panel_2.removeAll();
+				//panel_3.removeAll();
+				//panel_4.removeAll();
+				//panel_1.repaint();
+				//panel_2.repaint();
+				//panel_3.repaint();
+				//panel_4.repaint();
+				self.refresh();
 			}
 		});
 		settings.setLayout(null);

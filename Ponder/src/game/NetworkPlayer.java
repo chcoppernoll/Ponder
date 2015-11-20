@@ -80,7 +80,7 @@ public class NetworkPlayer implements Player {
 		// Hackish solution. Have to do for now
 		if (tmp.size() != old.size()) {
 			int o_siz = old.size();
-			for (; o_siz != old.size(); ++o_siz)
+			for (; o_siz != tmp.size(); ++o_siz)
 				move.add(tmp.get(o_siz));
 		}
 		
