@@ -8,6 +8,9 @@ import javax.swing.JFrame;
 import gui.SwingGraphics;
 import network.Client;
 
+/**
+ * Small adapter class to delay program execution until a mouse click is "heard"
+ */
 class ClickDelay extends MouseAdapter {
 	public boolean clicked = false;
 	
@@ -19,11 +22,17 @@ class ClickDelay extends MouseAdapter {
 public class NetworkPlayer implements Player {
 	private LinkedList<Event> move;
 
+	/**
+	 * Polymorphic method for the beginning of a player's turn
+	 */
 	public void onTurnStart(SwingGraphics graphics, Client net) {
 		//send "ack" server/client message
 		move = new LinkedList<>();
 	}
 
+	/**
+	 * Polymorphic method for the end of a player's turn
+	 */
 	public void onTurnEnd(SwingGraphics graphics, Client net) {
 		for (int i = 0; i < move.size(); ++i) {
 			Event e = move.get(i);
@@ -57,6 +66,9 @@ public class NetworkPlayer implements Player {
 		frame.removeMouseListener(m);
 	}
 
+	/**
+	 * Polymorphic method for determining when to switch from the "turn" phase to the "end turn" phase
+	 */
 	// Communicate with server/load "unseen" events into move
 	public boolean turnOver(SwingGraphics graphics, Client net) {
 		

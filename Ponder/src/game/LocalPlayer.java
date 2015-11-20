@@ -9,10 +9,16 @@ import network.Client;
 
 public class LocalPlayer implements Player {
 
+	/**
+	 * Polymorphic method for the beginning of a player's turn
+	 */
 	public void onTurnStart(SwingGraphics graphics, Client net) {
 		graphics.acceptInput();
 	}
 
+	/**
+	 * Polymorphic method for the end of a player's turn
+	 */
 	public void onTurnEnd(SwingGraphics graphics, Client net) {
 		graphics.stopInput();
 		graphics.color(Color.BLACK);
@@ -28,6 +34,9 @@ public class LocalPlayer implements Player {
 		// have to send to client
 	}
 
+	/**
+	 * Polymorphic method for determining when to switch from the "turn" phase to the "end turn" phase
+	 */
 	public boolean turnOver(SwingGraphics graphics, Client net) {
 		return graphics.getLogic().turnOver();
 	}
