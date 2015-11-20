@@ -85,11 +85,7 @@ public class NetworkPlayer implements Player {
 			move = new LinkedList<>();
 			
 			for (; o_siz != tmp.size(); ++o_siz)
-				if(tmp.get(o_siz)!= null){
-					move.add(tmp.get(o_siz));
-				}else{
-					System.out.println("Object is null");
-				}
+				move.add(tmp.get(o_siz));
 		}
 		
 		//if (net.hasGameUpdate(graphics.getLogic().getCurrTurn()))

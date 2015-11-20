@@ -67,18 +67,21 @@ public class Ponder {
 		
 		while (true) {
 			while (logic.victor() == -1) {
-				logic.nextTurn();
+				if (!window.loaded())
+					logic.nextTurn();
+				else
+					window.setLoaded(false);
 
 				Player curr = window.getCurrentPlayer();
 				curr.onTurnStart(window, net);
 
 				// wait for the player to finish their turn
-				while (logic.getCurrPlayer() != -1 && !curr.turnOver(window, net))
+				while (logic.getCurrPlayer() != -1 && !window.loaded() && !curr.turnOver(window, net))
 					try{
 						Thread.sleep(500);
 					} catch (Exception e) {}
 				
-				if (logic.getCurrPlayer() != -1) curr.onTurnEnd(window, net);
+				if (logic.getCurrPlayer() != -1 && !window.loaded()) curr.onTurnEnd(window, net);
 			}
 			
 			window.displayVictor(logic.getCurrPlayer() + 1);

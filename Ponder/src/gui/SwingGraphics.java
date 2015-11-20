@@ -55,6 +55,7 @@ public class SwingGraphics {
 	private Player[] players;
 	
 	private Client client;
+	private boolean just_loaded;
 	
 	DefaultListModel listModel;
 	JList list;
@@ -90,10 +91,19 @@ public class SwingGraphics {
 		logic.reset();
 		logic.nextTurn();
 
-		// Is turn == null for a newly created game ???
-		if (turns != null)
-			for(Event event : turns)
-				runEvent(event);
+		for(Event event : turns)
+			runEvent(event);
+		
+		setLoaded(true);
+		// Assign the local player to the array
+	}
+	
+	public boolean loaded() {
+		return just_loaded;
+	}
+	
+	public void setLoaded(boolean l) {
+		just_loaded = l;
 	}
 
 	/**
