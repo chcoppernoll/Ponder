@@ -1,29 +1,17 @@
 package network;
 
+import java.util.Arrays;
+
 public class MoveEvent implements Event {
-	
-	@Override
-	public String toString() {
-		return "MoveEvent [from=" + from.toString() + ", to=" + to.toString() + "]";
-	}
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8308940498190880283L;
+	static final long serialVersionUID = -1;
 	public final Position from, to;
-
-	public MoveEvent(Position from, Position to) {
+	public final boolean isSlide;
+	public final boolean[] movedFlags;
+	
+	public MoveEvent(Position from, Position to, boolean slide, boolean[] flags) {
 		this.from = from;
 		this.to = to;
+		this.isSlide = slide;
+		this.movedFlags = Arrays.copyOf(flags, flags.length);
 	}
-
-	public void run() {
-
-	}
-
-	public void undo() {
-
-	}
-
 }

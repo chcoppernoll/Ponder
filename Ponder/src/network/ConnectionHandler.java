@@ -156,14 +156,14 @@ public class ConnectionHandler implements Runnable {
 					int to_y = results.getInt("To_Pos_Y");
 
 					MoveEvent move = new MoveEvent(new Position(at_x, at_y),
-							new Position(to_x, to_y));
+							new Position(to_x, to_y), false, null);
 
 					moves.addLast(move);
 				} else if (results.getString("End_Of_Turn") != null
 						&& results.getString("End_Of_Turn").charAt(0) == 'T') {
 					// End of turn event.
 					int playerId = results.getInt("Player_id");
-					EndTurnEvent end = new EndTurnEvent(playerId);
+					TurnEvent end = new TurnEvent(playerId);
 					moves.addLast(end);
 				} else {
 					int playerId = results.getInt("Player_id");
@@ -220,7 +220,7 @@ public class ConnectionHandler implements Runnable {
 					prep.executeUpdate();
 				}
 
-				else if (event instanceof EndTurnEvent) {
+				else if (event instanceof TurnEvent) {
 					prep = con.prepareStatement(insert);
 					prep.setInt(1, comm.getGameId()); // TODO change to game id
 					prep.setShort(2, (short) 0); // TODO Player id
