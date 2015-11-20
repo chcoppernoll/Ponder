@@ -85,10 +85,15 @@ public class SwingGraphics {
 	private void loadGame(LinkedList<Event> turns) {
 		players[0] = players[1] = players[2] = players[3] = away;
 		logic.reset();
+		logic.nextTurn();
 		
-		for(Event event : turns) {
+		//TODO which player is you
+		
+		for(Event event : turns)
 			runEvent(event);
-		}
+		
+		// TODO Parse out local player into the players array
+		
 	}
 
 	/**
@@ -97,9 +102,6 @@ public class SwingGraphics {
 	public SwingGraphics(PonderLogic instance, Client client) {
 		logic = instance;
 		this.client = client;
-		
-		//URL resource = ClassLoader.getSystemResource("/art/circle.png");
-		//URL resource = ClassLoader.getSystemResource("art/circle.png");
 		
 		theme[0] = new ImageIcon[] {
 			//new ImageIcon(resource),
@@ -822,8 +824,9 @@ public class SwingGraphics {
 				color(Color.BLACK);
 			}
 		} else if (e instanceof TurnEvent) {
-			@SuppressWarnings("unused")
-			TurnEvent event = (TurnEvent)e;
+			logic.nextTurn();
+			//TurnEvent event = (TurnEvent)e;
+			//System.out.println("Turn event processed");
 		}
 	}
 	
