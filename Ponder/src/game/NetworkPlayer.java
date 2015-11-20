@@ -10,7 +10,6 @@ import network.Client;
 import network.Event;
 import network.MoveEvent;
 import network.SpawnEvent;
-import network.TurnEvent;
 
 /**
  * Small adapter class to delay program execution until a mouse click is "heard"
@@ -25,11 +24,13 @@ class ClickDelay extends MouseAdapter {
 
 public class NetworkPlayer implements Player {
 	private LinkedList<Event> move;
+	private LinkedList<Event> old;
 
 	/**
 	 * Polymorphic method for the beginning of a player's turn
 	 */
 	public void onTurnStart(SwingGraphics graphics, Client net) {
+		old = net.getGame();
 		move = null;
 	}
 
@@ -74,8 +75,17 @@ public class NetworkPlayer implements Player {
 	 */
 	// Communicate with server/load "unseen" events into move
 	public boolean turnOver(SwingGraphics graphics, Client net) {
-		if (net.hasGameUpdate(graphics.getLogic().getCurrTurn()))
-			move = net.getGame();
+		LinkedList<Event> tmp = net.getGame();
+		
+		// Hackish solution. Have to do for now
+		if (tmp.size() != old.size()) {
+			int o_siz = old.size();
+			for (; o_siz != old.size(); ++o_siz)
+				move.add(tmp.get(o_siz));
+		}
+		
+		//if (net.hasGameUpdate(graphics.getLogic().getCurrTurn()))
+			//move = net.getGame();
 		
 		return move != null;
 	}

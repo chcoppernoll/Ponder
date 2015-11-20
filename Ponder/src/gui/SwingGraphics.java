@@ -86,9 +86,10 @@ public class SwingGraphics {
 		players[0] = players[1] = players[2] = players[3] = away;
 		logic.reset();
 		
-		for(Event event : turns) {
-			runEvent(event);
-		}
+		// Is turn == null for a newly created game ???
+		if (turns != null)
+			for(Event event : turns)
+				runEvent(event);
 	}
 
 	/**
@@ -98,11 +99,7 @@ public class SwingGraphics {
 		logic = instance;
 		this.client = client;
 		
-		//URL resource = ClassLoader.getSystemResource("/art/circle.png");
-		//URL resource = ClassLoader.getSystemResource("art/circle.png");
-		
 		theme[0] = new ImageIcon[] {
-			//new ImageIcon(resource),
 			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
 			new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png"))
 		};
@@ -218,7 +215,6 @@ public class SwingGraphics {
 	 */
 	private void initialize() {		
 		frame.setTitle("Ponder");
-		//frame.setIconImage(image);
 		frame.setResizable(false);
 		frame.setBounds(100, 100, 810, 640);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -403,11 +399,12 @@ public class SwingGraphics {
 		btnCreateGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				client.createGame();
+				updateGameList();
 			}
 		});
 		panel.add(btnCreateGame);
 		
-		// Join game Button
+		// Join game Button (Possibly unnecessary)
 		JButton btnJoinGame = new JButton("Join game");
 		btnJoinGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -419,7 +416,9 @@ public class SwingGraphics {
 		JButton btnLoadGame = new JButton("Load game");
 		btnLoadGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
 				loadGame(client.getGame(list.getSelectedIndex()));
+				closeGameList();
 			}
 		});
 		panel.add(btnLoadGame);
