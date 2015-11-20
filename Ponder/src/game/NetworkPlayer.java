@@ -30,8 +30,7 @@ public class NetworkPlayer implements Player {
 	 * Polymorphic method for the beginning of a player's turn
 	 */
 	public void onTurnStart(SwingGraphics graphics, Client net) {
-		//send "ack" server/client message
-		move = new LinkedList<>();
+		move = null;
 	}
 
 	/**
@@ -75,9 +74,10 @@ public class NetworkPlayer implements Player {
 	 */
 	// Communicate with server/load "unseen" events into move
 	public boolean turnOver(SwingGraphics graphics, Client net) {
+		if (net.hasGameUpdate(graphics.getLogic().getCurrTurn()))
+			move = net.getGame();
 		
-		
-		return move.getLast() instanceof TurnEvent;
+		return move != null;
 	}
 
 }

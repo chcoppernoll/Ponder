@@ -28,7 +28,7 @@ class GridData {
 
 public class PonderLogic {
 	private double mana = 1.;
-	private int curr_player = -1;
+	private int curr_player = -1, curr_turn = -1;
 	private boolean in_move_phase = false;
 	private JButton[] flags = new JButton[4];
 	private JPanel stack;
@@ -42,7 +42,7 @@ public class PonderLogic {
 	
 	public void reset() {
 		mana = 1.;
-		curr_player = -1;
+		curr_player = curr_turn = -1;
 		in_move_phase = false;
 		stack = null;
 		focus = null;
@@ -511,6 +511,7 @@ public class PonderLogic {
 	public void nextTurn() {
 		mana = 1;
 		
+		++curr_turn;
 		curr_player = (curr_player + 1) % 4;
 		decStackDelay(curr_player);
 		
@@ -645,6 +646,10 @@ public class PonderLogic {
 		return curr_move.isEmpty() ? null : curr_move.getLast();
 	}
 	
+	public LinkedList<Event> getMove() {
+		return curr_move;
+	}
+	
 	/**
 	 * Get the piece at the given position
 	 * @param a
@@ -652,6 +657,14 @@ public class PonderLogic {
 	 */
 	public JButton getPiece(Position a) {
 		return grid.get(a);
+	}
+	
+	/**
+	 * Return the current turn number
+	 * @return
+	 */
+	public int getCurrTurn() {
+		return curr_turn;
 	}
 	
 	public static final int SPAWN_CLICK = 1, SELECT_CLICK = 2, MOVE_CLICK = 3;

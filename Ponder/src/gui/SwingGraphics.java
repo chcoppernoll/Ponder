@@ -846,4 +846,11 @@ public class SwingGraphics {
 			listModel.addElement(game);
 		}
 	}
+
+	public boolean nonLocal() {
+		return players[0] instanceof NetworkPlayer ||
+			   players[1] instanceof NetworkPlayer ||
+			   players[2] instanceof NetworkPlayer ||
+			   players[3] instanceof NetworkPlayer;
+	}
 }
