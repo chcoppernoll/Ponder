@@ -31,6 +31,12 @@ import network.Client;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListModel;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JScrollPane;
+import javax.swing.BoxLayout;
 
 public class SwingGraphics {
 
@@ -358,53 +364,58 @@ public class SwingGraphics {
 		txtpnGameDataGoes.setBounds(149, 31, 209, 20);
 		gameHeader.add(txtpnGameDataGoes);;
 		
+		
+		// Settings window
+		settings.setVisible(false);
+		
 
 		// Game List window
 		gameList.setVisible(false);
 		gameList.setBounds(150, 84, 500, 500);
 		frame.getContentPane().add(gameList);
 		gameList.setBackground(Color.WHITE);
-		gameList.setLayout(null);
+		gameList.setLayout(new BoxLayout(gameList, BoxLayout.Y_AXIS));
 		
+		JScrollPane scrollPane = new JScrollPane();
+		gameList.add(scrollPane);
+		
+		DefaultListModel listModel = new DefaultListModel();
+		listModel.addElement("Hello World!");
 		JList list = new JList();
-		list.setModel(new AbstractListModel() {
-			String[] values = new String[] {};
-			public int getSize() {
-				return values.length;
-			}
-			public Object getElementAt(int index) {
-				return values[index];
+		list.setModel(listModel);
+		scrollPane.setViewportView(list);
+		
+		JPanel panel = new JPanel();
+		gameList.add(panel);
+		
+		JButton btnCreateGame = new JButton("Create game");
+		btnCreateGame.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Create game listener
 			}
 		});
-		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setBounds(499, 395, -498, -394);
-		gameList.add(list);
-		
-		JButton loadGame = new JButton("Load game");
-		loadGame.setBounds(80, 424, 107, 23);
-		gameList.add(loadGame);
-		
-		JButton createGame = new JButton("Create game");
-		createGame.setBounds(197, 424, 107, 23);
-		gameList.add(createGame);
+		panel.add(btnCreateGame);
 		
 		JButton btnJoinGame = new JButton("Join game");
-		btnJoinGame.setBounds(314, 424, 107, 23);
-		gameList.add(btnJoinGame);
+		btnJoinGame.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Join game listener
+			}
+		});
+		panel.add(btnJoinGame);
 		
-		JPanel gameList = new JPanel();
-		gameList.setVisible(false);
-		gameList.setBounds(150, 84, 500, 500);
-		frame.getContentPane().add(gameList);
-		gameList.setBackground(Color.WHITE);
-		gameList.setLayout(new GridLayout(9, 9, 1, 1));
-		
-		
-		// Settings window
-		settings.setVisible(false);
+		JButton btnLoadGame = new JButton("Load game");
+		btnLoadGame.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Load game listener
+			}
+		});
+		panel.add(btnLoadGame);
 		settings.setBounds(150, 84, 500, 500);
 		frame.getContentPane().add(settings);
 		settings.setBackground(Color.WHITE);
+		
+		
 		
 		JButton newGame = new JButton("New Game");
 		newGame.addMouseListener(new MouseAdapter() {
@@ -429,7 +440,6 @@ public class SwingGraphics {
 		settings.setLayout(null);
 		newGame.setBounds(110, 145, 307, 54);				// Don't know how to change it's appearance in the settings frame
 		settings.add(newGame);
-
 
 		// Mouse Labeling
 		mseLbl.setHorizontalAlignment(SwingConstants.CENTER);
