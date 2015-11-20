@@ -1,42 +1,37 @@
 package gui;
 
-import java.awt.GridLayout;
-import java.awt.RenderingHints;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
-import java.util.Arrays;
-import java.awt.FlowLayout;
 
-import javax.swing.JFrame;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.ImageIcon;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
-import game.Event;
 import game.LocalPlayer;
-import game.MoveEvent;
 import game.NetworkPlayer;
 import game.Player;
 import game.PonderLogic;
-import game.SpawnEvent;
-import game.TurnEvent;
 import network.Client;
-import javax.swing.JList;
-import javax.swing.ListSelectionModel;
-import javax.swing.AbstractListModel;
-import javax.swing.DefaultListModel;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import javax.swing.JScrollPane;
-import javax.swing.BoxLayout;
+import network.Event;
+import network.MoveEvent;
+import network.SpawnEvent;
+import network.TurnEvent;
 
 public class SwingGraphics {
 

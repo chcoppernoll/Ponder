@@ -1,4 +1,5 @@
-package game;
+package network;
+import network.Event;
 
 public class AttachEvent implements Event {
 	public final Position pos;

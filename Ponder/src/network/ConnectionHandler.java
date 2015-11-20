@@ -156,7 +156,7 @@ public class ConnectionHandler implements Runnable {
 					int to_y = results.getInt("To_Pos_Y");
 
 					MoveEvent move = new MoveEvent(new Position(at_x, at_y),
-							new Position(to_x, to_y));
+							new Position(to_x, to_y), false, null);
 
 					moves.addLast(move);
 				} else if (results.getString("End_Of_Turn") != null

@@ -3,9 +3,10 @@ package game;
 import java.awt.Color;
 
 import javax.swing.JButton;
-
 import gui.SwingGraphics;
 import network.Client;
+import network.SpawnEvent;
+import network.TurnEvent;
 
 public class LocalPlayer implements Player {
 

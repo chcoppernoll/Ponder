@@ -48,7 +48,7 @@ public class main_client {
 					moves.add(temp13);
 					System.out.println("SpawnEvent: From (" + (i-2) + "," + (i-1) + ") PlayerId=" + (playerId%4) + "Exiled " + (i%2 ==1 ? true:false));
 				}else{
-					MoveEvent temp12 = new MoveEvent(new Position(i-1,i-2),new Position(i+1,i+2));
+					MoveEvent temp12 = new MoveEvent(new Position(i-1,i-2),new Position(i+1,i+2), false, null);
 					moves.add(temp12);
 					System.out.println("MoveEvent: From (" + (i-1) + "," + (i-2) + ") To (" + (i+1) + "," + (i+2) + ")");
 

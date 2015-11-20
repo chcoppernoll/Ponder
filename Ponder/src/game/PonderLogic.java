@@ -1,17 +1,19 @@
 package game;
 
-
 import java.awt.Color;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
-import network.Position;
+
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import gui.SwingGraphics;
+import network.Event;
+import network.MoveEvent;
+import network.Position;
+import network.SpawnEvent;
 
 class GridData {
 	public int owner = -1, num_flags = 0;
@@ -24,7 +26,7 @@ class GridData {
 	}
 }
 
-public class PonderLogic implements GameLogic<JButton> {
+public class PonderLogic {
 	private double mana = 1.;
 	private int curr_player = -1;
 	private boolean in_move_phase = false;

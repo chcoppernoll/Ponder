@@ -7,6 +7,10 @@ import javax.swing.JFrame;
 
 import gui.SwingGraphics;
 import network.Client;
+import network.Event;
+import network.MoveEvent;
+import network.SpawnEvent;
+import network.TurnEvent;
 
 /**
  * Small adapter class to delay program execution until a mouse click is "heard"
