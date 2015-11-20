@@ -90,6 +90,9 @@ public class SwingGraphics {
 		players[0] = players[1] = players[2] = players[3] = away;
 		logic.reset();
 		logic.nextTurn();
+		
+		if (!turns.isEmpty())
+			turns.removeLast();
 
 		for(Event event : turns)
 			runEvent(event);
@@ -97,7 +100,12 @@ public class SwingGraphics {
 		setLoaded(true);
 		players[client.getMyID() - 1] = local;
 		// Assign the local player to the array
+		players[client.getMyID() - 1] = local;
 		
+	}
+	
+	public Player[] getPlayers() {
+		return players;
 	}
 	
 	public boolean loaded() {
