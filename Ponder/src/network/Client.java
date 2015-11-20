@@ -10,6 +10,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Client {
 	private Socket sock = null;
@@ -26,6 +28,8 @@ public class Client {
 	private ObjectOutputStream out;
 	int currGameId;
 	int playerid;
+	private final Lock _mutex = new ReentrantLock(true);
+
 
 	public Client() {
 		currGameId = -1;
@@ -68,7 +72,7 @@ public class Client {
 			out.flush();
 			in = new ObjectInputStream(sock.getInputStream());
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("No Server To Connect To");
 		}
 	}
 
@@ -94,12 +98,9 @@ public class Client {
 			CommunicationObject commOut = new CommunicationObject(
 					this.createGame, -1, this.macAddress);
 			out.writeObject(commOut);
-			CommunicationObject commIn = (CommunicationObject) in.readObject();
+			CommunicationObject commIn = readlock();
 			return commIn.getGameIds();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -117,12 +118,9 @@ public class Client {
 			CommunicationObject commOut = new CommunicationObject(
 					this.getGameList, -1, this.macAddress);
 			out.writeObject(commOut);
-			CommunicationObject commIn = (CommunicationObject) in.readObject();
+			CommunicationObject commIn = readlock();
 			return commIn.getGameIds();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -174,13 +172,10 @@ public class Client {
 
 		try {
 			out.writeObject(commOut);
-			CommunicationObject commIn = (CommunicationObject) in.readObject();
+			CommunicationObject commIn = readlock();
 			playerid = commIn.getPlayerid();
 			return commIn.getMoves();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -189,5 +184,21 @@ public class Client {
 	
 	public int getMyID(){
 		return playerid;
+	}
+	
+	public CommunicationObject readlock(){
+		CommunicationObject commIn = null;
+		_mutex.lock();
+		try {
+			commIn = (CommunicationObject) in.readObject();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		_mutex.unlock();
+		return commIn;
 	}
 }
