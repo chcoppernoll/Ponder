@@ -39,10 +39,10 @@ public class main_client {
 			System.out.println("Creating Moves");
 			for(int i = 0; i < 20; i++){
 				if(i % 5 == 2){
-					EndTurnEvent move = new EndTurnEvent(playerId % 4);
+					TurnEvent move = new TurnEvent(playerId % 4);
 					++playerId;
 					moves.add(move);
-					System.out.println("EndTurnEvent: PlayerId=" + (playerId%4));
+					System.out.println("TurnEvent: PlayerId=" + (playerId%4));
 				}else if(i % 6 == 2){
 					SpawnEvent temp13 = new SpawnEvent(new Position(i-2,i-1),playerId % 4,i%2 ==1 ? true:false);
 					moves.add(temp13);
@@ -72,7 +72,7 @@ public class main_client {
 				else if (e instanceof SpawnEvent){
 					System.out.println(((SpawnEvent)e).toString());
 				}else{
-					System.out.println(((EndTurnEvent)e).toString());
+					System.out.println(((TurnEvent)e).toString());
 				}
 			}
 			

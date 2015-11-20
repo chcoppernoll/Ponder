@@ -11,12 +11,6 @@ public class ServerSocketCreator implements Runnable {
 	@Override
 	public void run() {
 		System.out.println("Accepting");
-		/*
-		 * try { Connection con = DriverManager.getConnection(
-		 * "jdbc:mysql://71.13.212.62:3306", "Ponder", "CS3141R02");
-		 * System.out.println("This worked"); } catch (SQLException e1) {
-		 * System.out.println("Didn't connect to db"); e1.printStackTrace(); }
-		 */
 		try {
 			serverSocket = new ServerSocket(7777);
 		} catch (IOException e1) {

@@ -10,6 +10,7 @@ public class Server {
 	}
 
 	public void run() {
+
 		ServerSocketCreator create = new ServerSocketCreator();
 		Thread serverSock = new Thread(create);
 		serverSock.start();
@@ -23,7 +24,7 @@ public class Server {
 			System.out.println(input);
 
 		}
-
+		read.close();
 		create.terminate();
 	}
 }
