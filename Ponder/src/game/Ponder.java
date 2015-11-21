@@ -45,6 +45,8 @@ public class Ponder {
 		theme[3][1] = tmp;
 	}
 	
+	// BUG Turn doesn't end after player has spawned if all pieces were in the spawn area
+	
 	public static void main(String[] args) {
 		PonderLogic logic = new PonderLogic();
 		Client net = new Client();
@@ -72,17 +74,18 @@ public class Ponder {
 				window.setLoaded(false);
 
 				Player curr = window.getCurrentPlayer();
+				//logic.debug();
 				curr.onTurnStart(window, net);
 
 				// wait for the player to finish their turn
 				while (logic.getCurrPlayer() != -1 && !window.loaded() && !curr.turnOver(window, net))
 					try{
-						for (Player p : window.getPlayers()) {
-							System.out.print(p instanceof LocalPlayer);
-							System.out.print(" ");
-						}
+						//for (Player p : window.getPlayers()) {
+						//	System.out.print(p instanceof LocalPlayer);
+						//	System.out.print(" ");
+						//}
 							
-						System.out.println("");
+						//System.out.println("");
 						Thread.sleep(500);
 					} catch (Exception e) {}
 				

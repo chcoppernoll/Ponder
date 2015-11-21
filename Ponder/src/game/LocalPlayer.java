@@ -32,10 +32,8 @@ public class LocalPlayer implements Player {
 		
 		logic.addEvent(new TurnEvent(logic.getCurrPlayer()));
 		
-		if (graphics.nonLocal()) {
-			System.out.println("Sending Move");
+		if (graphics.nonLocal())
 			net.addMoves(logic.getMove());
-		}
 	}
 
 	/**

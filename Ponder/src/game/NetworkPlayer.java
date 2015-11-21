@@ -39,7 +39,8 @@ public class NetworkPlayer implements Player {
 	 * Polymorphic method for the end of a player's turn
 	 */
 	public void onTurnEnd(SwingGraphics graphics, Client net) {
-		for (int i = 0; i < move.size(); ++i) {
+		//for (Event e : move) {
+		for (int i = 0; i < move.size() - 1; ++i) {
 			Event e = move.get(i);
 			graphics.runEvent(e);
 			
@@ -58,6 +59,7 @@ public class NetworkPlayer implements Player {
 		}
 		
 		// Delay next turn until player gives okay
+		/*
 		ClickDelay m = new ClickDelay();
 		JFrame frame = graphics.getFrame();
 		frame.addMouseListener(m);
@@ -69,6 +71,7 @@ public class NetworkPlayer implements Player {
 		}
 		
 		frame.removeMouseListener(m);
+		//*/
 	}
 
 	/**

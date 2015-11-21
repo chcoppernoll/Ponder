@@ -1,6 +1,7 @@
 package game;
 
 import java.awt.Color;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -362,7 +363,11 @@ public class PonderLogic {
 	 * @return whether the given player can spawn
 	 */
 	public boolean canPlayerSpawn(int player) {
-		return !in_move_phase && curr_player == player && mana > 0 && !spawn_sets[player].isEmpty() && spawn_sets[player].peek() <= 0;
+		return !in_move_phase
+			 && curr_player == player
+			 && mana > 0
+			 && !spawn_sets[player].isEmpty()
+			 && spawn_sets[player].peek() <= 0;
 	}
 	
 	/**
@@ -530,8 +535,12 @@ public class PonderLogic {
 	public boolean turnOver() {
 		//player has pieces to move || player has pieces to spawn
 		return in_move_phase ? focus == null
-							 : spawn_sets[curr_player].size() < 4 ? false
+							 : spawn_sets[curr_player].size() < 4 ? (spawn_sets[curr_player].size() == 3 && mana < 1)
 									 							  : !canPlayerSpawn(curr_player);
+	}
+	
+	public void debug() {
+		System.out.println(spawn_sets[curr_player].toString());
 	}
 	
 	/**
