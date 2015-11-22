@@ -32,6 +32,7 @@ public class NetworkPlayer implements Player {
 	public void onTurnStart(SwingGraphics graphics, Client net) {
 		graphics.stopInput();
 		old = net.getGame();
+		graphics.printMove(old);
 		move = null;
 	}
 
@@ -39,19 +40,20 @@ public class NetworkPlayer implements Player {
 	 * Polymorphic method for the end of a player's turn
 	 */
 	public void onTurnEnd(SwingGraphics graphics, Client net) {
-		//for (Event e : move) {
+		graphics.printMove(move);
+		
 		for (int i = 0; i < move.size() - 1; ++i) {
 			Event e = move.get(i);
 			graphics.runEvent(e);
 			
 			// Perform jump and despawning concurrently
 			if (e instanceof SpawnEvent)
-				if (!((SpawnEvent)e).exiled && i != move.size() - 1 && (move.get(i + 1) instanceof MoveEvent))
+				if (((SpawnEvent)e).exiled && i != move.size() - 2 && (move.get(i + 1) instanceof MoveEvent))
 					graphics.runEvent(move.get(++i));
 			
 			// Delay so user understands movement
 			try {
-				Thread.sleep(1000);							// Needs tuning
+				Thread.sleep(500);							// Needs tuning
 				
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();

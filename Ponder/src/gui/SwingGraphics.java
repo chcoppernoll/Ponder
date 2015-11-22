@@ -12,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -111,6 +112,24 @@ public class SwingGraphics {
 	
 	public void setLoaded(boolean l) {
 		just_loaded = l;
+	}
+	
+	public void printMove(List<Event> list) {
+		for (Event e : list) {
+			if (e instanceof MoveEvent) {
+				MoveEvent mv = (MoveEvent)e;
+				System.out.printf("%s from %s to %s\n", mv.isSlide ? "Slide" : "Jump", mv.from, mv.to);
+			}
+			if (e instanceof SpawnEvent) {
+				SpawnEvent sp = (SpawnEvent)e;
+				System.out.printf("%s: %s\n", sp.exiled ? "Exile" : "Spawn", sp.pos);
+			}
+			if (e instanceof TurnEvent) {
+				System.out.println("End Turn");
+			}
+		}
+		
+		System.out.println("\n");
 	}
 
 	/**
