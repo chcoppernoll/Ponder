@@ -92,6 +92,8 @@ public class SwingGraphics {
 		logic.reset();
 		logic.nextTurn();
 		
+		printMove(turns);
+		
 		for(Event event : turns)
 			runEvent(event);
 		
@@ -122,14 +124,14 @@ public class SwingGraphics {
 			}
 			if (e instanceof SpawnEvent) {
 				SpawnEvent sp = (SpawnEvent)e;
-				System.out.printf("%s: %s\n", sp.exiled ? "Exile" : "Spawn", sp.pos);
+				System.out.printf("%s piece %s %s\n", sp.exiled ? "Exile" : "Spawn", sp.exiled ? "at" : "on", sp.pos);
 			}
 			if (e instanceof TurnEvent) {
 				System.out.println("End Turn");
 			}
 		}
 		
-		System.out.println("\n");
+		System.out.println("");
 	}
 
 	/**
@@ -847,6 +849,7 @@ public class SwingGraphics {
 			logic.enterMovePhase();						// Prevent spawning actions from occurring
 			move(logic.getPiece(event.from), src);							// Perform the move
 
+			//System.out.println("src=" + src);
 			logic.setColor(src, Color.GREEN);
 			logic.select(src);
 			
