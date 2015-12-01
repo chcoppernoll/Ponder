@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class ConnectionHandler implements Runnable {
-
+	int playerid = ServerSocketCreator.playerid; 
 	private Socket sock;
 	private final String insert = "INSERT INTO moves (Move_id, Game_id, Player_id, At_Pos_X, "
 			+ "At_Pos_Y, To_Pos_X, To_Pos_Y, Exiled, End_Of_Turn) "
@@ -43,6 +43,7 @@ public class ConnectionHandler implements Runnable {
 	@Override
 	public void run() {
 		try {
+			DriverManager.registerDriver(new com.mysql.jdbc.Driver ());
 			con = DriverManager.getConnection(
 					"jdbc:mysql://71.13.212.62:3306/ponder", "Ponder",
 					"CS3141R02");
@@ -59,6 +60,7 @@ public class ConnectionHandler implements Runnable {
 				Thread.sleep(1000);
 				CommunicationObject comm = (CommunicationObject) in
 						.readObject();
+				comm.setPlayerid(playerid%4);
 				switch (comm.getAction()) {
 				case 0:
 					this.getGameList(comm);

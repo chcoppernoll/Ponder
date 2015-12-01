@@ -12,6 +12,10 @@ public class MoveEvent implements Event {
 		this.from = from;
 		this.to = to;
 		this.isSlide = slide;
+		if(flags !=null){
 		this.movedFlags = Arrays.copyOf(flags, flags.length);
+		}else{
+			this.movedFlags = null;
+		}
 	}
 }
