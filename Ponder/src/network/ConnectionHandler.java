@@ -43,7 +43,7 @@ public class ConnectionHandler implements Runnable {
 	@Override
 	public void run() {
 		try {
-			//DriverManager.registerDriver(new com.mysql.jdbc.Driver ());
+			DriverManager.registerDriver(new com.mysql.jdbc.Driver ());
 			con = DriverManager.getConnection(
 					"jdbc:mysql://71.13.212.62:3306/ponder", "Ponder",
 					"CS3141R02");
