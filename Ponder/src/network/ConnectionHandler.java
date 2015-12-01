@@ -198,7 +198,7 @@ public class ConnectionHandler implements Runnable {
 				if (event instanceof SpawnEvent) {
 					prep = con.prepareStatement(this.insert);
 					prep.setInt(1, comm.getGameId()); // TODO change to game id
-					prep.setShort(2, (short) comm.getPlayerid()); // TODO change to player id
+					prep.setShort(2, (short) ((SpawnEvent)event).owner); // TODO change to player id
 					prep.setShort(3, (short) ((SpawnEvent) event).pos.x);
 					prep.setShort(4, (short) ((SpawnEvent) event).pos.y);
 					prep.setNull(5, java.sql.Types.SMALLINT);
