@@ -10,7 +10,7 @@ public class CommunicationObject implements Serializable {
 	private LinkedList<Event> moves;
 	private int action;
 	private int gameId;
-	@SuppressWarnings("unused")
+
 	private String mac;
 	private ArrayList<Integer> gameIds;
 	private int playerid;
@@ -70,4 +70,11 @@ public class CommunicationObject implements Serializable {
 		this.gameIds = gameIds;
 	}
 
+	public String getMac() {
+		return mac;
+	}
+	
+	public void setMac(String mac) {
+		this.mac = mac;
+	}
 }

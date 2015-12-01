@@ -22,8 +22,9 @@ public class ConnectionHandler implements Runnable {
 	private final String getGames = "SELECT * FROM game ORDER BY Game_id";
 	private final String createGame = "INSERT INTO game (Game_id, Game_Name, Game_In_Progress) "
 			+ "VALUES (DEFAULT, '', 0)";
-	// private final String getAfter = "SELECT * FROM moves WHERE Game_id = ?"
-	// + " AND Move_id > ? ORDER BY Move_id";
+	private final String numInGame = "SELECT COUNT(*) FROM player WHERE Game_id=?";
+	private final String getPlayers = "SELECT * FROM player WHERE Game_id=?";
+	private final String addPlayer = "INSERT INTO player (player_id, Game_id, mac) VALUES (?, ?, ?)";
 	Connection con;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
@@ -126,8 +127,58 @@ public class ConnectionHandler implements Runnable {
 		return 0;
 	}
 
-	private int loadGame(CommunicationObject comm) {
-		int gameId = comm.getGameId();
+	private void loadGame(CommunicationObject comm) {
+		int gameId = comm.getGameId();	
+		int playerId = this.getPlayerId(gameId, mac);
+		if(playerId != -1){
+			comm.setPlayerid(playerId);
+			this.sendGame(gameId, comm);
+		}
+		else{
+			int playerCount = this.getPlayerCount(gameId);
+			if(playerCount < 4){
+				playerId = this.addPlayer(comm, playerCount + 1);
+				if(playerId != -1){
+					comm.setPlayerid(playerId);
+					this.sendGame(gameId, comm);
+				}
+			}
+			else{
+				comm.setGameId(-1);
+				try {
+					out.writeObject(comm);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}				
+			}
+		}
+	}
+	/**
+	 * Gets the player id. Returns -1 if the player isn't in the game.
+	 * 
+	 * @param gameId
+	 * @param mac
+	 * @return The player id. -1 if player isn't in game.
+	 */
+	private int getPlayerId(int gameId, String mac){
+		try {
+			PreparedStatement prep = con.prepareStatement(this.getPlayers);
+			prep.setInt(1, gameId);
+			ResultSet rs = prep.executeQuery();
+			int playerId = 1;
+			while(rs.next()){
+				if (mac.equals(rs.getString("mac"))){
+					return playerId;
+				}
+				playerId++;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
+	private void sendGame(int gameId, CommunicationObject comm){
 		try {
 			PreparedStatement prep = con.prepareStatement(this.getAll);
 			prep.setInt(1, gameId);
@@ -140,9 +191,7 @@ public class ConnectionHandler implements Runnable {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-			return 1;
 		}
-		return 0;
 	}
 
 	private CommunicationObject parseMoves(CommunicationObject comm,
@@ -239,5 +288,37 @@ public class ConnectionHandler implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private int addPlayer(CommunicationObject comm, int playerId){
+		try {
+			PreparedStatement prep = con.prepareStatement(this.addPlayer);
+			prep.setInt(1, playerId);
+			prep.setInt(2, comm.getGameId());
+			prep.setString(3, comm.getMac());
+			prep.executeUpdate();
+			return playerId;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return -1;
+	}
+
+	private int getPlayerCount(int gameId){
+		try {
+			PreparedStatement prep = con.prepareStatement(numInGame);
+			prep.setInt(1, gameId);
+			ResultSet rs = prep.executeQuery();
+			return rs.getInt(1);
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return -1;
+
 	}
 }
