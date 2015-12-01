@@ -17,12 +17,10 @@ public class Server {
 
 		Scanner read = new Scanner(System.in);
 		char input = 'N';
-
+		System.out.println("Would you like to stop the server? Y/N");
+		input = read.nextLine().charAt(0);
 		while (input != 'Y') {
-			System.out.println("Would you like to stop the server? Y/N");
 			input = read.nextLine().charAt(0);
-			System.out.println(input);
-
 		}
 		read.close();
 		create.terminate();

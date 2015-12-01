@@ -196,7 +196,7 @@ public class ConnectionHandler implements Runnable {
 				if (event instanceof SpawnEvent) {
 					prep = con.prepareStatement(this.insert);
 					prep.setInt(1, comm.getGameId()); // TODO change to game id
-					prep.setShort(2, (short) 0); // TODO change to player id
+					prep.setShort(2, (short) comm.getPlayerid()); // TODO change to player id
 					prep.setShort(3, (short) ((SpawnEvent) event).pos.x);
 					prep.setShort(4, (short) ((SpawnEvent) event).pos.y);
 					prep.setNull(5, java.sql.Types.SMALLINT);
@@ -210,7 +210,7 @@ public class ConnectionHandler implements Runnable {
 				else if (event instanceof MoveEvent) {
 					prep = con.prepareStatement(insert);
 					prep.setInt(1, comm.getGameId()); // TODO change to game id
-					prep.setNull(2, java.sql.Types.SMALLINT);// TODO player id
+					prep.setNull(2,  comm.getPlayerid());// TODO player id
 					prep.setShort(3, (short) ((MoveEvent) event).from.x);
 					prep.setShort(4, (short) ((MoveEvent) event).from.y);
 					prep.setShort(5, (short) ((MoveEvent) event).to.x);
@@ -223,7 +223,7 @@ public class ConnectionHandler implements Runnable {
 				else if (event instanceof TurnEvent) {
 					prep = con.prepareStatement(insert);
 					prep.setInt(1, comm.getGameId()); // TODO change to game id
-					prep.setShort(2, (short) 0); // TODO Player id
+					prep.setShort(2, (short) comm.getPlayerid()); // TODO Player id
 					prep.setNull(3, java.sql.Types.SMALLINT);
 					prep.setNull(4, java.sql.Types.SMALLINT);
 					prep.setNull(5, java.sql.Types.SMALLINT);
