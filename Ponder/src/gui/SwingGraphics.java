@@ -124,7 +124,7 @@ public class SwingGraphics {
 			}
 			if (e instanceof SpawnEvent) {
 				SpawnEvent sp = (SpawnEvent)e;
-				System.out.printf("%s piece %s %s\n", sp.exiled ? "Exile" : "Spawn", sp.exiled ? "at" : "on", sp.pos);
+				System.out.printf("%s %d's piece %s %s\n", sp.exiled ? "Exile" : "Spawn", sp.owner, sp.exiled ? "at" : "on", sp.pos);
 			}
 			if (e instanceof TurnEvent) {
 				System.out.println("End Turn");
