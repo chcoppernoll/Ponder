@@ -45,12 +45,15 @@ public class Ponder {
 		theme[3][1] = tmp;
 	}
 	
-	// BUG Turn doesn't end after player has spawned if all pieces were in the spawn area
+	// BUG 
+	// slide => jump in network play (Doesn't actually matter)
+	// jumping player a piece by player b => jumping player b piece by player b
 	
 	public static void main(String[] args) {
 		PonderLogic logic = new PonderLogic();
 		Client net = new Client();
 		final SwingGraphics window = new SwingGraphics(logic, net);
+		
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {

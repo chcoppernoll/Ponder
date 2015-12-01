@@ -115,9 +115,9 @@ public class Client {
 	 */
 	public ArrayList<Integer> loadGameList() {
 		try {
-			CommunicationObject commOut = new CommunicationObject(
-					this.getGameList, -1, this.macAddress);
+			CommunicationObject commOut = new CommunicationObject(this.getGameList, -1, this.macAddress);
 			out.writeObject(commOut);
+			
 			CommunicationObject commIn = readlock();
 			return commIn.getGameIds();
 		} catch (IOException e) {
@@ -189,6 +189,7 @@ public class Client {
 	public CommunicationObject readlock(){
 		CommunicationObject commIn = null;
 		_mutex.lock();
+		
 		try {
 			commIn = (CommunicationObject) in.readObject();
 		} catch (ClassNotFoundException e) {
@@ -198,6 +199,7 @@ public class Client {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		_mutex.unlock();
 		return commIn;
 	}

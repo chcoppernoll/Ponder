@@ -98,9 +98,12 @@ public class SwingGraphics {
 			runEvent(event);
 		
 		setLoaded(true);
-		System.out.println(client.getMyID());
-		players[client.getMyID() - 1] = local;
-		// Assign the local player to the array
+		int myID = client.getMyID();
+		System.out.println(myID);
+		
+		// Allow "spectators"
+		if (myID > 0 && myID < 5)
+			players[myID - 1] = local;
 		
 	}
 	
@@ -443,7 +446,7 @@ public class SwingGraphics {
 		gameList.add(scrollPane);
 		
 		listModel = new DefaultListModel();
-		updateGameList();
+		//updateGameList();
 		// Game Browser
 		list = new JList();
 		list.setModel(listModel);
@@ -790,7 +793,7 @@ public class SwingGraphics {
 				
 			// Move from cell to spawn stack
 			} else if (to instanceof JPanel) {
-				if (to != getStack(logic.getPieceOwner(f))) throw new ArrayIndexOutOfBoundsException();
+				if (to != getStack(logic.getPieceOwner(f))) throw new RuntimeException("Attempt to move a piece to an opponent's spawn stack");
 				
 				logic.addToSpawn(logic.getPieceOwner(f));
 				((JPanel)to).add(new JLabel(f.getIcon()));
@@ -849,7 +852,6 @@ public class SwingGraphics {
 			logic.enterMovePhase();						// Prevent spawning actions from occurring
 			move(logic.getPiece(event.from), src);							// Perform the move
 
-			//System.out.println("src=" + src);
 			logic.setColor(src, Color.GREEN);
 			logic.select(src);
 			
@@ -867,8 +869,6 @@ public class SwingGraphics {
 		} else if (e instanceof TurnEvent) {
 			logic.nextTurn();
 			logic.select(null);
-			//TurnEvent event = (TurnEvent)e;
-			//System.out.println("Turn event processed");
 		}
 	}
 	
