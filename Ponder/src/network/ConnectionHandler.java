@@ -129,7 +129,7 @@ public class ConnectionHandler implements Runnable {
 
 	private void loadGame(CommunicationObject comm) {
 		int gameId = comm.getGameId();	
-		int playerId = this.getPlayerId(gameId, mac);
+		int playerId = this.getPlayerId(gameId, comm.getMac());
 		if(playerId != -1){
 			comm.setPlayerid(playerId);
 			this.sendGame(gameId, comm);
