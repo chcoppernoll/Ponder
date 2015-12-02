@@ -58,7 +58,9 @@ public class SwingGraphics {
 	private Client client;
 	private boolean just_loaded;
 	
+	@SuppressWarnings("rawtypes")
 	DefaultListModel listModel;
+	@SuppressWarnings("rawtypes")
 	JList list;
 	
 	/**
@@ -99,11 +101,14 @@ public class SwingGraphics {
 		
 		setLoaded(true);
 		int myID = client.getMyID();
-		System.out.println(myID);
+		System.out.println("You are player " + (myID + 1));
 		
-		// Allow "spectators"
-		if (myID > 0 && myID < 5)
-			players[myID - 1] = local;
+		// Allow "spectator mode"
+		if (myID >= 0 && myID < 4)
+			players[myID] = local;
+		
+		//if (myID > 0 && myID < 5)
+			//players[myID - 1] = local;
 		
 	}
 	
