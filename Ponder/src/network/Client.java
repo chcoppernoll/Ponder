@@ -18,7 +18,8 @@ public class Client {
 	//private final int port = 7777;
 	private final int port = 25567;
 	//private final String IP = "141.219.214.24";
-	private final String IP = "71.13.212.62";
+	//private final String IP = "71.13.212.62";
+	private final String IP = "141.219.214.143";
 	private final String macAddress;
 	private final int getGameList = 0;
 	private final int getGame = 1;
@@ -115,11 +116,12 @@ public class Client {
 	 */
 	public ArrayList<Integer> loadGameList() {
 		try {
-			CommunicationObject commOut = new CommunicationObject(this.getGameList, -1, this.macAddress);
+			CommunicationObject commOut = new CommunicationObject(
+					this.getGameList, -1, this.macAddress);
 			out.writeObject(commOut);
-			
 			CommunicationObject commIn = readlock();
 			return commIn.getGameIds();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -167,6 +169,7 @@ public class Client {
 	 */
 	public LinkedList<Event> getGame(int gameId) {
 		this.currGameId = gameId;
+		
 		CommunicationObject commOut = new CommunicationObject(this.getGame, gameId, this.macAddress);
 		
 
@@ -174,6 +177,10 @@ public class Client {
 			out.writeObject(commOut);
 			CommunicationObject commIn = readlock();
 			playerid = commIn.getPlayerid();
+			if(commIn.getGameId()==-1){
+				//Do something
+				return null;
+			}
 			return commIn.getMoves();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -189,7 +196,6 @@ public class Client {
 	public CommunicationObject readlock(){
 		CommunicationObject commIn = null;
 		_mutex.lock();
-		
 		try {
 			commIn = (CommunicationObject) in.readObject();
 		} catch (ClassNotFoundException e) {
@@ -199,7 +205,6 @@ public class Client {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		_mutex.unlock();
 		return commIn;
 	}

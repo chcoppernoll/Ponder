@@ -10,6 +10,7 @@ import network.Client;
 import network.Event;
 import network.MoveEvent;
 import network.SpawnEvent;
+import network.TurnEvent;
 
 /**
  * Small adapter class to delay program execution until a mouse click is "heard"
@@ -59,21 +60,6 @@ public class NetworkPlayer implements Player {
 				e1.printStackTrace();
 			}
 		}
-		
-		// Delay next turn until player gives okay
-		/*
-		ClickDelay m = new ClickDelay();
-		JFrame frame = graphics.getFrame();
-		frame.addMouseListener(m);
-		
-		while (!m.clicked) {
-			try {
-				Thread.sleep(300);
-			} catch (InterruptedException e1) {}
-		}
-		
-		frame.removeMouseListener(m);
-		//*/
 	}
 
 	/**
@@ -86,7 +72,7 @@ public class NetworkPlayer implements Player {
 		System.out.println("Checking for Updates");
 		
 		// Hackish solution. Have to do for now
-		if (tmp.size() != old.size()) {
+		if (tmp.size() != old.size() && tmp.getLast() instanceof TurnEvent) {
 			int o_siz = old.size();
 			move = new LinkedList<>();
 			
