@@ -10,9 +10,9 @@ import javax.swing.JButton;
 import gui.SwingGraphics;
 import network.Client;
 
-// TODO Network Interaction
+// TODO Bug Fixes
 /*
- * Determine how to switch games (and players)
+ * Jumping player a piece by player b => jumping player b piece by player b
  */
 
 public class Ponder {
@@ -44,8 +44,6 @@ public class Ponder {
 		theme[2][1] = tmp;
 		theme[3][1] = tmp;
 	}
-	
-	// BUG Turn doesn't end after player has spawned if all pieces were in the spawn area
 	
 	public static void main(String[] args) {
 		PonderLogic logic = new PonderLogic();

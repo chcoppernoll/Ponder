@@ -100,10 +100,13 @@ public class SwingGraphics {
 			runEvent(event);
 
 		setLoaded(true);
-		System.out.println(client.getMyID());
-		players[client.getMyID() - 1] = local;
-		// Assign the local player to the array
+		
+		// Assign the local player
+		int myID = client.getMyID();
+		System.out.println("You are player " + (myID + 1));
 
+		if (myID >= 0 && myID < 4)
+			players[myID] = local;
 	}
 
 	public Player[] getPlayers() {
@@ -146,20 +149,16 @@ public class SwingGraphics {
 
 		theme[0] = new ImageIcon[] {
 				new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
-				new ImageIcon(
-						SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")) };
+				new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")) };
 		theme[1] = new ImageIcon[] {
 				new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
-				new ImageIcon(
-						SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")) };
+				new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")) };
 		theme[2] = new ImageIcon[] {
 				new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
-				new ImageIcon(
-						SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")) };
+				new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")) };
 		theme[3] = new ImageIcon[] {
 				new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/Error.gif")),
-				new ImageIcon(
-						SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")) };
+				new ImageIcon(SwingGraphics.class.getResource("/com/sun/java/swing/plaf/windows/icons/JavaCup32.png")) };
 
 		initialize();
 	}
@@ -434,7 +433,6 @@ public class SwingGraphics {
 		JLabel txtpnGameDataGoes = new JLabel();
 		txtpnGameDataGoes.setBounds(149, 31, 209, 20);
 		gameHeader.add(txtpnGameDataGoes);
-		;
 
 		// Settings window
 		settings.setVisible(false);
@@ -480,12 +478,8 @@ public class SwingGraphics {
 		JButton btnLoadGame = new JButton("Load game");
 		btnLoadGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int index = list.getSelectedIndex();
-				LinkedList<Event> moves = client.getGame(index);
-				if(moves != null){
-					loadGame(client.getGame(index));
-					closeGameList();
-				}
+				loadGame(client.getGame(list.getSelectedIndex()));
+				closeGameList();
 			}
 		});
 		panel.add(btnLoadGame);
