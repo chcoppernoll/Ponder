@@ -66,29 +66,32 @@ public class Ponder {
 		window.reset();
 		
 		while (true) {
-			while (logic.victor() == -1) {
-				if (!window.loaded())
-					logic.nextTurn();
-				window.setLoaded(false);
-
-				Player curr = window.getCurrentPlayer();
-				//logic.debug();
-				curr.onTurnStart(window, net);
-
-				// wait for the player to finish their turn
-				while (logic.getCurrPlayer() != -1 && !window.loaded() && !curr.turnOver(window, net))
-					try{
-						//for (Player p : window.getPlayers()) {
-						//	System.out.print(p instanceof LocalPlayer);
-						//	System.out.print(" ");
-						//}
-							
-						//System.out.println("");
-						Thread.sleep(500);
-					} catch (Exception e) {}
+			try {
+				while (logic.victor() == -1) {
+					if (!window.loaded())
+						logic.nextTurn();
+					window.setLoaded(false);
+	
+					Player curr = window.getCurrentPlayer();
+					//logic.debug();
+					curr.onTurnStart(window, net);
+	
+					// wait for the player to finish their turn
+					while (logic.getCurrPlayer() != -1 && !window.loaded() && !curr.turnOver(window, net))
+						try{
+							//for (Player p : window.getPlayers()) {
+							//	System.out.print(p instanceof LocalPlayer);
+							//	System.out.print(" ");
+							//}
+								
+							//System.out.println("");
+							Thread.sleep(500);
+						} catch (Exception e) {}
+					
+					if (logic.getCurrPlayer() != -1 && !window.loaded()) curr.onTurnEnd(window, net);
 				
-				if (logic.getCurrPlayer() != -1 && !window.loaded()) curr.onTurnEnd(window, net);
-			}
+				}			
+			} catch(Exception e) {}
 			
 			window.displayVictor(logic.getCurrPlayer() + 1);
 			

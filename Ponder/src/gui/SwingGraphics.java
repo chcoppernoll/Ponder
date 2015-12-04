@@ -103,10 +103,10 @@ public class SwingGraphics {
 		
 		// Assign the local player
 		int myID = client.getMyID();
-		System.out.println("You are player " + (myID + 1));
+		System.out.println("You are player " + myID);
 
 		if (myID > 0 && myID < 5)
-			players[myID] = local;
+			players[myID - 1] = local;
 	}
 
 	public Player[] getPlayers() {
@@ -583,25 +583,22 @@ public class SwingGraphics {
 								} else {
 									JButton jmpd = logic.jmpPiece(from, src);
 
-									// If jumping a piece (doesn't care about
-									// hasMoved since you can't select a piece
-									// that has moved)
+									// If jumping a piece (doesn't care about hasMoved since you can't select a piece that has moved)
 									if (jmpd != null) {
-										if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from)) { // Despawn
-											// the
-											// piece
-											logic.addEvent(new SpawnEvent(logic.positionOf(jmpd),
-													logic.getPieceOwner(jmpd), true));
+										if (logic.getPieceOwner(jmpd) != logic.getPieceOwner(from)) { 		// Despawn the piece
+											logic.addEvent(new SpawnEvent(logic.positionOf(jmpd), logic.getPieceOwner(jmpd), true));
 											runEvent(logic.lastEvent());
 										}
 
-										logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src),
-												false, logic.flagsOn(from)));
+										logic.addEvent(new MoveEvent(logic.positionOf(from), logic.positionOf(src), false, logic.flagsOn(from)));
 
 									} else // Movement ended
 										return;
 
 								}
+								
+								MoveEvent mv = (MoveEvent)logic.lastEvent();
+								System.out.printf("%s from %s to %s\n", mv.isSlide ? "Slide" : "Jump", mv.from, mv.to);
 
 								System.out.println("Moving");
 								runEvent(logic.lastEvent());
