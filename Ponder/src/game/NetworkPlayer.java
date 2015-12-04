@@ -61,6 +61,9 @@ public class NetworkPlayer implements Player {
 				e1.printStackTrace();
 			}
 		}
+		
+		graphics.getLogic().select(null);
+		graphics.color(Color.BLACK);
 	}
 
 	/**
@@ -72,6 +75,8 @@ public class NetworkPlayer implements Player {
 		
 		System.out.println("Checking for Updates");
 		
+		// return net.hasNewMove();
+		
 		// Hackish solution. Have to do for now
 		if (tmp.size() != old.size() && tmp.getLast() instanceof TurnEvent) {
 			int o_siz = old.size();
@@ -81,11 +86,6 @@ public class NetworkPlayer implements Player {
 				move.add(tmp.get(o_siz));
 		}
 		
-		//if (net.hasGameUpdate(graphics.getLogic().getCurrTurn()))
-			//move = net.getGame();
-		
-		graphics.getLogic().select(null);
-		graphics.color(Color.BLACK);
 		return move != null;
 	}
 
