@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class ConnectionHandler implements Runnable {
-	int playerid = ServerSocketCreator.playerid; 
+	int playerid = ServerSocketCreator.playerid;
 	private Socket sock;
 	private final String insert = "INSERT INTO moves (Move_id, Game_id, Player_id, At_Pos_X, "
 			+ "At_Pos_Y, To_Pos_X, To_Pos_Y, Exiled, End_Of_Turn) "
@@ -44,7 +44,7 @@ public class ConnectionHandler implements Runnable {
 	@Override
 	public void run() {
 		try {
-			DriverManager.registerDriver(new com.mysql.jdbc.Driver ());
+			DriverManager.registerDriver(new com.mysql.jdbc.Driver());
 			con = DriverManager.getConnection(
 					"jdbc:mysql://71.13.212.62:3306/ponder", "Ponder",
 					"CS3141R02");
@@ -61,7 +61,7 @@ public class ConnectionHandler implements Runnable {
 				Thread.sleep(1000);
 				CommunicationObject comm = (CommunicationObject) in
 						.readObject();
-				comm.setPlayerid(playerid%4);
+				comm.setPlayerid(playerid % 4);
 				switch (comm.getAction()) {
 				case 0:
 					this.getGameList(comm);
@@ -128,31 +128,30 @@ public class ConnectionHandler implements Runnable {
 	}
 
 	private void loadGame(CommunicationObject comm) {
-		int gameId = comm.getGameId();	
+		int gameId = comm.getGameId();
 		int playerId = this.getPlayerId(gameId, comm.getMac());
-		if(playerId != -1){
+		if (playerId != -1) {
 			comm.setPlayerid(playerId);
 			this.sendGame(gameId, comm);
-		}
-		else{
+		} else {
 			int playerCount = this.getPlayerCount(gameId);
-			if(playerCount < 4){
+			if (playerCount < 4) {
 				playerId = this.addPlayer(comm, playerCount + 1);
-				if(playerId != -1){
+				if (playerId != -1) {
 					comm.setPlayerid(playerId);
 					this.sendGame(gameId, comm);
 				}
-			}
-			else{
+			} else {
 				comm.setGameId(-1);
 				try {
 					out.writeObject(comm);
 				} catch (IOException e) {
 					e.printStackTrace();
-				}				
+				}
 			}
 		}
 	}
+
 	/**
 	 * Gets the player id. Returns -1 if the player isn't in the game.
 	 * 
@@ -160,14 +159,14 @@ public class ConnectionHandler implements Runnable {
 	 * @param mac
 	 * @return The player id. -1 if player isn't in game.
 	 */
-	private int getPlayerId(int gameId, String mac){
+	private int getPlayerId(int gameId, String mac) {
 		try {
 			PreparedStatement prep = con.prepareStatement(this.getPlayers);
 			prep.setInt(1, gameId);
 			ResultSet rs = prep.executeQuery();
 			int playerId = 1;
-			while(rs.next()){
-				if (mac.equals(rs.getString("mac"))){
+			while (rs.next()) {
+				if (mac.equals(rs.getString("mac"))) {
 					return playerId;
 				}
 				playerId++;
@@ -178,7 +177,7 @@ public class ConnectionHandler implements Runnable {
 		return -1;
 	}
 
-	private void sendGame(int gameId, CommunicationObject comm){
+	private void sendGame(int gameId, CommunicationObject comm) {
 		try {
 			PreparedStatement prep = con.prepareStatement(this.getAll);
 			prep.setInt(1, gameId);
@@ -228,6 +227,7 @@ public class ConnectionHandler implements Runnable {
 					SpawnEvent spawn = new SpawnEvent(new Position(x, y),
 							playerId, exiled);
 					moves.addLast(spawn);
+
 				}
 
 			}
@@ -247,7 +247,11 @@ public class ConnectionHandler implements Runnable {
 				if (event instanceof SpawnEvent) {
 					prep = con.prepareStatement(this.insert);
 					prep.setInt(1, comm.getGameId()); // TODO change to game id
-					prep.setShort(2, (short) ((SpawnEvent)event).owner); // TODO change to player id
+					prep.setShort(2, (short) ((SpawnEvent) event).owner); // TODO
+																			// change
+																			// to
+																			// player
+																			// id
 					prep.setShort(3, (short) ((SpawnEvent) event).pos.x);
 					prep.setShort(4, (short) ((SpawnEvent) event).pos.y);
 					prep.setNull(5, java.sql.Types.SMALLINT);
@@ -261,7 +265,7 @@ public class ConnectionHandler implements Runnable {
 				else if (event instanceof MoveEvent) {
 					prep = con.prepareStatement(insert);
 					prep.setInt(1, comm.getGameId()); // TODO change to game id
-					prep.setNull(2,  comm.getPlayerid());// TODO player id
+					prep.setNull(2, comm.getPlayerid());// TODO player id
 					prep.setShort(3, (short) ((MoveEvent) event).from.x);
 					prep.setShort(4, (short) ((MoveEvent) event).from.y);
 					prep.setShort(5, (short) ((MoveEvent) event).to.x);
@@ -274,7 +278,8 @@ public class ConnectionHandler implements Runnable {
 				else if (event instanceof TurnEvent) {
 					prep = con.prepareStatement(insert);
 					prep.setInt(1, comm.getGameId()); // TODO change to game id
-					prep.setShort(2, (short) comm.getPlayerid()); // TODO Player id
+					prep.setShort(2, (short) comm.getPlayerid()); // TODO Player
+																	// id
 					prep.setNull(3, java.sql.Types.SMALLINT);
 					prep.setNull(4, java.sql.Types.SMALLINT);
 					prep.setNull(5, java.sql.Types.SMALLINT);
@@ -290,7 +295,7 @@ public class ConnectionHandler implements Runnable {
 		}
 	}
 
-	private int addPlayer(CommunicationObject comm, int playerId){
+	private int addPlayer(CommunicationObject comm, int playerId) {
 		try {
 			PreparedStatement prep = con.prepareStatement(this.addPlayer);
 			prep.setInt(1, playerId);
@@ -306,17 +311,16 @@ public class ConnectionHandler implements Runnable {
 		return -1;
 	}
 
-	private int getPlayerCount(int gameId){
+	private int getPlayerCount(int gameId) {
 		try {
 			PreparedStatement prep = con.prepareStatement(numInGame);
 			prep.setInt(1, gameId);
 			ResultSet rs = prep.executeQuery();
-			if(rs.next()){
+			if (rs.next()) {
 				return rs.getInt(1);
-			}else{
+			} else {
 				return -1;
 			}
-			
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
