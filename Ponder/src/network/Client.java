@@ -19,7 +19,7 @@ public class Client {
 	private final int port = 25567;
 	//private final String IP = "141.219.214.24";
 	//private final String IP = "71.13.212.62";
-	private final String IP = "141.219.214.143";
+	private final String IP = "141.219.213.244";
 	private final String macAddress;
 	private final int getGameList = 0;
 	private final int getGame = 1;

@@ -105,7 +105,7 @@ public class SwingGraphics {
 		int myID = client.getMyID();
 		System.out.println("You are player " + (myID + 1));
 
-		if (myID >= 0 && myID < 4)
+		if (myID > 0 && myID < 5)
 			players[myID] = local;
 	}
 
