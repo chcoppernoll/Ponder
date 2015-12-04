@@ -1,5 +1,6 @@
 package game;
 
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.util.LinkedList;
 
@@ -83,6 +84,8 @@ public class NetworkPlayer implements Player {
 		//if (net.hasGameUpdate(graphics.getLogic().getCurrTurn()))
 			//move = net.getGame();
 		
+		graphics.getLogic().select(null);
+		graphics.color(Color.BLACK);
 		return move != null;
 	}
 
